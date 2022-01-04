@@ -1,0 +1,16 @@
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.exe
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.csprojAssemblyReference.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.AssemblyInfoInputs.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.AssemblyInfo.cs
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.deps.json
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.runtimeconfig.json
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.runtimeconfig.dev.json
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifReader.pdb
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\ExifLibrary.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.csproj.CopyComplete
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.pdb
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.genruntimeconfig.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\ConsoleApp1\obj\Debug\netcoreapp3.1\ExifReader.csproj.CoreCompileInputs.cache
