@@ -1,26 +1,177 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model RandomWeb.Models.ImageMetaData;
+<style>
+    body {
+        background-color: slategray;
+    }
+    #leftSlider .slider-selection {
+        background: #BABABA;
+    }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    #rightSlider .slider-selection {
+        background: #BABABA;
+    }
 
+    #topSlider .slider-selection {
+        background: #BABABA;
+    }
 
-    <img src="home/image/@ViewBag.Image" />
+    #bottomSlider .slider-selection {
+        background: #BABABA;
+    }
+</style>
+<form id="imgform">
+    <div class="text-left">
+        <p class="font-weight-bold font-italic text-center">@Model.Path</p>
+    </div>
 
-    <ul>
-        <li>ISOSpeedRatings:@ViewBag.ISOSpeedRatings;</li>
-        <li>PixelXDimension:@ViewBag.PixelXDimension;</li>
-        <li>PixelYDimension:@ViewBag.PixelYDimension;</li>
-        <li>GPSAltitude:@ViewBag.GPSAltitude;</li>
-        <li>GPSLatitude:@ViewBag.GPSLatitude;</li>
-        <li>GPSLongitude:@ViewBag.GPSLongitude;</li>
-    </ul>
+    <div class="row">
+        <div class="col-sm-12 col-lg-6 text-xl-right">
+            <div>
+                <input id="rotVal" value="@Model.Rotate"  style="display:none;"/>
+                <span class="btn" onclick="setRotation(0)" title="0">0</span>
+                <span class="btn" onclick="setRotation(90)" title="90">90</span>
+                <span class="btn" onclick="setRotation(180)" title="180">180</span>
+                <span class="btn" onclick="setRotation(270)" title="270">270</span>
+            </div>
+            <div class="row">
+                <label class="col-form-label" for="left">Crop Left</label>
+                <input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
+                <input id="left" data-slider-id='leftSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-value="@Model.LeftCrop" />
 
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <label class="col-form-label" for="top">Crop Top</label>
+                    <input id="topVal" value="@Model.TopCrop" style="display:none;" />
+                    <input id="top" data-slider-id='topSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-value="@Model.TopCrop" />
 
+                </div>
+                <div class="col-8">
+                    <img id="theimage" src="home/image/@Model.Image" />
+                    <input id="Image" type="text" value="@Model.Image" style="display:none;"/>
+                </div>
+                <div class="col-2">
+                    <label class="col-form-label" for="bottom">Crop Bottom</label>
+                    <input id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
+                    <input id="bottom" data-slider-id='bottomSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-value="@Model.BottomCrop" />
+                </div>
+            </div>
+            <div class="row">
+                <label class="col-form-label" for="right">Crop Right</label>
+                <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
+                <input id="right" data-slider-id='rightSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-value="@Model.RightCrop" />
 
+            </div>
+        </div>
 
+        <div class="col-sm-12 col-lg-6">
+            <ul>
+                <li>FileCreationDateTime:@Model.FileDateTime;</li>
+                <li>ExifDateTime:@Model.ExifDateTime;</li>
+                <li>Width:@Model.Width;</li>
+                <li>Height:@Model.Height;</li>
+                <li>ISOSpeedRatings:@Model.ISOSpeedRatings;</li>
+                <li>PixelXDimension:@Model.PixelXDimension;</li>
+                <li>PixelYDimension:@Model.PixelYDimension;</li>
+                <li>GPSAltitude:@Model.GPSAltitude;</li>
+                <li>GPSLatitude:@Model.GPSLatitude;</li>
+                <li>GPSLongitude:@Model.GPSLongitude;</li>
+            </ul>
+        </div>
+    </div>
+    <button type="submit">Save</button>
+</form>
+@section scripts {
 
+    <script>
+        var imgData={ };
+        function setRotation(rot) {
 
-</div>
+            $("#rotVal").val(rot);
+            changeImage();
+        }
+    function changeImage() {
+        var img = document.getElementById("theimage");
+        var rot = document.getElementById("rotVal").value;
+        var leftcrop = document.getElementById("leftVal").value;
+        var rightcrop = document.getElementById("rightVal").value;
+        var topcrop = document.getElementById("topVal").value;
+        var bottomcrop = document.getElementById("bottomVal").value;
+        img.src = "home/image/@Model.Image?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot;
+    }
+
+    $(document).ready(function () {
+
+        changeImage();
+
+        $('#left').slider({
+            formatter: function (value) {
+                return 'Current value: ' + value;
+            }
+        });
+        $("#left").on("slide", function (slideEvt) {
+            $("#leftVal").val(slideEvt.value);
+            changeImage();
+        });
+        $('#right').slider({
+            formatter: function (value) {
+                return 'Current value: ' + value;
+            },
+            
+        });
+        $("#right").on("slide", function (slideEvt) {
+            $("#rightVal").val(slideEvt.value);
+            changeImage();
+        });
+        $('#top').slider({
+            orientation: 'vertical',
+            formatter: function (value) {
+                return 'Current value: ' + value;
+            }
+        });
+        $("#top").on("slide", function (slideEvt) {
+            $("#topVal").val(slideEvt.value);
+            changeImage();
+        });
+        $('#bottom').slider({
+            orientation: 'vertical',
+            tooltip_position: 'left',
+            formatter: function (value) {
+                return 'Current value: ' + value;
+            }
+        });
+        $("#bottom").on("slide", function (slideEvt) {
+            $("#bottomVal").val(slideEvt.value);
+            changeImage();
+        });
+
+        $("#imgform").submit(function (e) {
+            // here's where you stop the default submit action of the form
+            imgData.Image = $("#Image").val();
+            imgData.Rotate = parseInt($("#rotVal").val());
+            imgData.LeftCrop = parseInt($("#leftVal").val());
+            imgData.TopCrop = parseInt($("#topVal").val());
+            imgData.RightCrop = parseInt($("#rightVal").val());
+            imgData.BottomCrop = parseInt($("#bottomVal").val());
+            e.preventDefault();
+            // Now execute your AJAX
+            $.ajax({
+                type: "POST",
+                url: "home/updateimage",
+                data: JSON.stringify(imgData),
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8'
+            }).done(function (response) {
+                // handle a successful response
+                alert("yay");
+            }).fail(function (xhr, status, message) {
+                // handle a failure response
+                alert("boo");
+            });
+        });
+    });
+    </script>
+}
