@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RandomWeb.Models;
 using Imageflow.Fluent;
+using Microsoft.AspNetCore.Hosting;
+using System.Threading;
 
 namespace RandomWeb.Controllers
 {
@@ -24,83 +26,137 @@ namespace RandomWeb.Controllers
             @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\1960s",
             @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\gigi and rayray's wedding",
             @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\UTO 4th of July",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos"};
+            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos",
+            @"C:\Users\foldi\Dropbox\1-FilesToSort"};
 
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string id)
         {
             Random random = new Random();
             ImageMetaData imageMetaData = new ImageMetaData();
             int imageId = 0;
             int folderId = 0;
             var loaded = false;
-            ImageFile file = null;
+            ImageFile exifData = null;
             string[] pictures = null;
+            string imagePath = null;
 
-            while (!loaded)
+            if (!string.IsNullOrEmpty(id))
             {
-                try
+
+                folderId = int.Parse(id.Split('-')[0]);
+                imageId = int.Parse(id.Split('-')[1]);
+
+                string folder = folders[folderId];
+                pictures = System.IO.Directory.GetFiles(folder);
+
+                imagePath = pictures[imageId]; //validate the path for security or use other means to generate the path.
+
+            }
+            else
+            {
+                //load a random picture
+                while (!loaded)
                 {
-                    folderId = random.Next(0, folders.Count());
+                    try
+                    {
+                        folderId = random.Next(0, folders.Count());
 
-                    pictures = System.IO.Directory.GetFiles(folders[folderId]);
+                        pictures = System.IO.Directory.GetFiles(folders[folderId]);
 
-                    imageId = random.Next(0, pictures.Count());
+                        imageId = random.Next(0, pictures.Count());
 
-                    file = ImageFile.FromFile(pictures[imageId]);
+                        imagePath = pictures[imageId];
 
-                    loaded = true;
+                        bool invalid = IsFileInvalid(imagePath);
+
+                        if (!invalid)
+                        {
+
+                            loaded = true;
+                        }
+                    }
+                    catch
+                    { }
                 }
-                catch
-                { }
             }
 
-            string json = JsonConvert.SerializeObject(file, Newtonsoft.Json.Formatting.Indented);
-
-            imageMetaData.ISOSpeedRatings = GetPropertyBruteForce(file,ExifTag.ISOSpeedRatings);
-            imageMetaData.PixelXDimension = GetPropertyBruteForce(file,ExifTag.PixelXDimension);
-            imageMetaData.PixelYDimension = GetPropertyBruteForce(file,ExifTag.PixelYDimension);
-            imageMetaData.GPSAltitude =     GetPropertyBruteForce(file,ExifTag.GPSAltitude)+"m "+ GetPropertyBruteForce(file, ExifTag.GPSAltitudeRef);
-            imageMetaData.GPSLatitude =     GetPropertyBruteForce(file,ExifTag.GPSLatitude)+" "+ GetPropertyBruteForce(file, ExifTag.GPSLatitudeRef);
-            imageMetaData.GPSLongitude = GetPropertyBruteForce(file, ExifTag.GPSLongitude)+" "+ GetPropertyBruteForce(file, ExifTag.GPSLongitudeRef);
-            imageMetaData.ExifDateTime = GetPropertyBruteForce(file, ExifTag.DateTime);
-
-            imageMetaData.Image = $"{folderId}-{imageId}";
-
-            var path = pictures[imageId];
-            imageMetaData.Path = path;
-
-            byte[] imageBytes = System.IO.File.ReadAllBytes(path);
-            var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
-
-            imageMetaData.FileDateTime = System.IO.File.GetCreationTime(path);
-
-            imageMetaData.Width = info.ImageWidth;
-            imageMetaData.Height = info.ImageHeight;
-
-
             //load json meta data
-            var jsonPath = path + ".json";
-            var metadataexists = System.IO.File.Exists(jsonPath);
-            if (metadataexists)
+            var filename = System.IO.Path.GetFileName(imagePath);
+            var jsonPath = System.IO.Path.Combine(folders[folderId],".meta", filename + ".json");
+
+            try
+            {
+                exifData = ImageFile.FromFile(imagePath);
+            }
+            catch
+            {
+                
+            }
+            bool metaDataCurrent = true;
+            bool metaDataExists = System.IO.File.Exists(jsonPath);
+            if (metaDataExists)
             {
                 var metaData = System.IO.File.ReadAllText(jsonPath);
 
                 ImageMetaData fileMetaData = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageMetaData>(metaData);
 
-                imageMetaData.BottomCrop = fileMetaData.BottomCrop;
-                imageMetaData.LeftCrop = fileMetaData.LeftCrop;
-                imageMetaData.RightCrop = fileMetaData.RightCrop;
-                imageMetaData.TopCrop = fileMetaData.TopCrop;
-                imageMetaData.Rotate = fileMetaData.Rotate;
+                if(fileMetaData.Version != ImageMetaData.CurrentVersion)
+                {
+                    metaDataCurrent = false;
+                }
+
+                //convert v1 to v2
+                if(string.IsNullOrEmpty(fileMetaData.Version))
+                {
+                    var subimage = new ImageCoords()
+                    {
+                        BottomCrop = fileMetaData.BottomCrop,
+                        LeftCrop = fileMetaData.LeftCrop,
+                        RightCrop = fileMetaData.RightCrop,
+                        TopCrop = fileMetaData.TopCrop,
+                        Rotate = fileMetaData.Rotate
+                    };
+
+                    fileMetaData.Version = "2";
+                    fileMetaData.SubImages = new List<ImageCoords>();
+                    fileMetaData.SubImages.Add(subimage);
+                }
+
+                imageMetaData = fileMetaData;
             }
+            if (exifData != null)
+            {
+                string exifJson = JsonConvert.SerializeObject(exifData, Newtonsoft.Json.Formatting.Indented);
+
+                imageMetaData.ISOSpeedRatings = GetPropertyBruteForce(exifData, ExifTag.ISOSpeedRatings);
+                imageMetaData.PixelXDimension = GetPropertyBruteForce(exifData, ExifTag.PixelXDimension);
+                imageMetaData.PixelYDimension = GetPropertyBruteForce(exifData, ExifTag.PixelYDimension);
+                imageMetaData.GPSAltitude = GetPropertyBruteForce(exifData, ExifTag.GPSAltitude) + "m " + GetPropertyBruteForce(exifData, ExifTag.GPSAltitudeRef);
+                imageMetaData.GPSLatitude = GetPropertyBruteForce(exifData, ExifTag.GPSLatitude) + " " + GetPropertyBruteForce(exifData, ExifTag.GPSLatitudeRef);
+                imageMetaData.GPSLongitude = GetPropertyBruteForce(exifData, ExifTag.GPSLongitude) + " " + GetPropertyBruteForce(exifData, ExifTag.GPSLongitudeRef);
+                imageMetaData.ExifDateTime = GetPropertyBruteForce(exifData, ExifTag.DateTime);
+            }
+            imageMetaData.Image = $"{folderId}-{imageId}";
+
+            imageMetaData.Path = imagePath;
+
+            byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
+            var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
+
+            imageMetaData.FileDateTime = System.IO.File.GetCreationTime(imagePath);
+
+            imageMetaData.Width = info.ImageWidth;
+            imageMetaData.Height = info.ImageHeight;
+
+            
 
             //default crops if they don't exist
-            if(imageMetaData.RightCrop == 0)
+            if (imageMetaData.RightCrop == 0)
             {
                 imageMetaData.RightCrop = (int)imageMetaData.Width;
             }
@@ -110,13 +166,63 @@ namespace RandomWeb.Controllers
                 imageMetaData.BottomCrop = (int)imageMetaData.Height;
             }
 
-            //AIzaSyCEwQziJOjmBPsI9Z6E40snOVWf3OBpsCc
-            if(!metadataexists)
+            //AIzaSyCEwQziJOjmBPsI9Z6E40snOVWf3OBpsCc - MAPS key
+
+            //create file if it doesn't exist
+           // if(!metaDataCurrent)
             {
-                System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(imageMetaData));
+                System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(imageMetaData,Formatting.Indented));
             }
 
             return View(imageMetaData);
+        }
+
+        private bool IsFileInvalid(string imagePath)
+        {
+            var imgEx = System.IO.Path.GetExtension(imagePath);
+
+            foreach (string extention in GetInvalidExtentions())
+            {
+                if (imgEx.ToLower() == extention.ToLower())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private List<string> GetInvalidExtentions()
+        {
+            var exceptions = new List<string>() { ".json",".aae",".mov"};
+            //var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
+            //_readWriteLock.EnterReadLock();
+            //try
+            //{
+            //    if (System.IO.File.Exists(expath))
+            //    {
+            //        exceptions.AddRange(System.IO.File.ReadAllLines(expath));
+            //    }
+            //}
+            //finally
+            //{
+            //    _readWriteLock.ExitReadLock();
+            //}
+            return exceptions;
+        }
+
+        private static ReaderWriterLockSlim _readWriteLock = new ReaderWriterLockSlim();
+        private void SaveInvalidExtentions(List<string> extentions)
+        {
+            //_readWriteLock.EnterWriteLock();
+            //try
+            //{
+            //    var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
+            //    System.IO.File.WriteAllLines(expath, extentions);
+            //}
+            //finally {
+            //    _readWriteLock.ExitWriteLock();
+            //}
         }
 
         private string GetPropertyBruteForce(ImageFile file, ExifTag tag)
@@ -148,6 +254,25 @@ namespace RandomWeb.Controllers
 
         public FileResult Image(string id)
         {
+            return GetImage(id, 400, 400);
+        }
+
+        public FileResult ImageMobile(string id)
+        {
+            return GetImage(id, 300, 300);
+        }
+        public FileResult ImageFull(string id)
+        {
+            return GetImage(id, 0, 0);
+        }
+
+        private FileResult GetImage(string id, int width, int height)
+        { 
+            if(string.IsNullOrEmpty(id))
+            {
+                return null;
+            }
+
             var querystring = Request.Query;
 
             int folderId = int.Parse(id.Split('-')[0]);
@@ -160,7 +285,6 @@ namespace RandomWeb.Controllers
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(path);
 
-            var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
 
             var notloaded = true;
             var reverseCrop = false;
@@ -169,6 +293,7 @@ namespace RandomWeb.Controllers
             {
                 try
                 {
+                    var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
                     using (var b = new ImageJob())
                     {
                         var buildNode = b.Decode(imageBytes);
@@ -180,18 +305,27 @@ namespace RandomWeb.Controllers
                                 int[] coords = q.Value.ToString().Split(',').Select(x => int.Parse(x)).ToArray();
                                 if (coords.Count() == 4)
                                 {
-                                    if (!reverseCrop)
+                                    if (coords[0] == 0 &&
+                                       coords[1] == 0 &&
+                                       coords[2] == info.ImageWidth &&
+                                       coords[3] == info.ImageHeight)
                                     {
-                                        buildNode = buildNode.Crop(coords[0], coords[1], coords[2], coords[3]);
+                                        //dont need to crop
                                     }
                                     else
                                     {
-                                        buildNode = buildNode.Region(coords[0], coords[1], coords[2], coords[3], AnyColor.Black);
-                                       // buildNode = buildNode.Crop(coords[1], coords[0], coords[3], coords[2]);
+                                        if (!reverseCrop)
+                                        {
+                                            buildNode = buildNode.Crop(coords[0], coords[1], coords[2], coords[3]);
+                                        }
+                                        else
+                                        {
+                                            buildNode = buildNode.Region(coords[0], coords[1], coords[2], coords[3], AnyColor.Black);
+                                            // buildNode = buildNode.Crop(coords[1], coords[0], coords[3], coords[2]);
+                                        }
                                     }
                                 }
                             }
-
                             if (q.Key == "rot")
                             {
                                 switch (q.Value.ToString())
@@ -210,10 +344,12 @@ namespace RandomWeb.Controllers
                             }
                         }
 
+                        if (width > 0 && height > 0)
+                        {
+                            buildNode = buildNode.ResizerCommands("width=" + width + "&height=" + height + "&mode=max&scale=down");
+                        }
 
-
-                        var r = buildNode
-                    .ResizerCommands("width=400&height=400&mode=max&scale=down")
+                    var r = buildNode
                     .EncodeToBytes(new MozJpegEncoder(100, true))
                     .Finish().InProcessAsync().Result;
 
@@ -223,9 +359,27 @@ namespace RandomWeb.Controllers
                 }
                 catch(Exception e)
                 {
+                    //sometimes this library gets the coordinates mixed up..
+                    // doing a region on the second try seems to make it happy
                     if(e.Message.Contains("Crop coordinates"))
                     {
                         reverseCrop = !reverseCrop;
+                    }
+
+                    if(e.Message.Contains("ImageMalformed: NoEnabledDecoderFound"))
+                    {
+                        var exceptions = GetInvalidExtentions();
+
+                        var extension = System.IO.Path.GetExtension(path);
+                        
+
+                        if (!exceptions.Contains(extension))
+                        {
+                            exceptions.Add(extension);
+                        }
+
+                        SaveInvalidExtentions(exceptions);
+
                     }
                 }
             }
@@ -244,14 +398,15 @@ namespace RandomWeb.Controllers
 
             string folder = folders[folderId];
             var pictures = System.IO.Directory.GetFiles(folder);
-
-            var path = pictures[imageId]+".json"; //validate the path for security or use other means to generate the path.
-
+            var imagePath = pictures[imageId];
+            var filename = System.IO.Path.GetFileName(imagePath);
+            var jsonPath = System.IO.Path.Combine(folders[folderId], ".meta", filename + ".json");
+           
             ImageMetaData fileMetaData = new ImageMetaData();
 
-            if (System.IO.File.Exists(path))
+            if (System.IO.File.Exists(jsonPath))
             {
-                var metaData = System.IO.File.ReadAllText(path);
+                var metaData = System.IO.File.ReadAllText(jsonPath);
 
                 fileMetaData = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageMetaData>(metaData);
 
@@ -263,7 +418,7 @@ namespace RandomWeb.Controllers
             fileMetaData.TopCrop = data.TopCrop;
             fileMetaData.Rotate = data.Rotate;
 
-            System.IO.File.WriteAllText(path,JsonConvert.SerializeObject(fileMetaData));
+            System.IO.File.WriteAllText(jsonPath,JsonConvert.SerializeObject(fileMetaData,Formatting.Indented));
 
             return new JsonResult("yay");
         }

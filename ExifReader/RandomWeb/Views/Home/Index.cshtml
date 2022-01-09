@@ -6,21 +6,36 @@
     body {
         background-color: slategray;
     }
+
     #leftSlider .slider-selection {
-        background: #BABABA;
+        background: #BABA00;
     }
 
     #rightSlider .slider-selection {
-        background: #BABABA;
+        background: #BABA00;
     }
 
     #topSlider .slider-selection {
-        background: #BABABA;
+        background: #BABA00;
     }
 
     #bottomSlider .slider-selection {
-        background: #BABABA;
+        background: #BABA00;
     }
+
+
+    .slider-handle.custom {
+        background: transparent none;
+        /* You can customize the handle and set a background image */
+    }
+
+        /* Or display content like unicode characters or fontawesome icons */
+        .slider-handle.custom::before {
+            line-height: 40px;
+            font-size: 40px;
+            content: '\26AB'; /*unicode circle character*/
+            color: #726204;
+        }
 </style>
 <form id="imgform">
     <div class="text-left">
@@ -28,46 +43,51 @@
     </div>
 
     <div class="row">
-        <div class="col-sm-12 col-lg-6 text-xl-right">
-            <div>
-                <input id="rotVal" value="@Model.Rotate"  style="display:none;"/>
-                <span class="btn" onclick="setRotation(0)" title="0">0</span>
-                <span class="btn" onclick="setRotation(90)" title="90">90</span>
-                <span class="btn" onclick="setRotation(180)" title="180">180</span>
-                <span class="btn" onclick="setRotation(270)" title="270">270</span>
-            </div>
+        <div class="col-lg-7 col-sm-12">
             <div class="row">
-                <label class="col-form-label" for="left">Crop Left</label>
-                <input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
-                <input id="left" data-slider-id='leftSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-value="@Model.LeftCrop" />
-
-            </div>
-            <div class="row">
-                <div class="col-2">
-                    <label class="col-form-label" for="top">Crop Top</label>
-                    <input id="topVal" value="@Model.TopCrop" style="display:none;" />
-                    <input id="top" data-slider-id='topSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-value="@Model.TopCrop" />
-
+                <div class="col-12">
+                    <input id="rotVal" value="@Model.Rotate" style="display:none;" />
+                    <span class="btn" onclick="setRotation(0)" title="0">0</span>
+                    <span class="btn" onclick="setRotation(90)" title="90">90</span>
+                    <span class="btn" onclick="setRotation(180)" title="180">180</span>
+                    <span class="btn" onclick="setRotation(270)" title="270">270</span>
+                    <button type="submit">Save</button>
+                    <a href="/home/image/@Model.Image" id="fullsizelink" target="_blank">full size</a>
+                    <a href="/home/image/@Model.Image" id="originallink" target="_blank">original</a>
+                    <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
                 </div>
-                <div class="col-8">
-                    <img id="theimage" src="home/image/@Model.Image" />
-                    <input id="Image" type="text" value="@Model.Image" style="display:none;"/>
+                <div class="col-12">
+                    <label class="col-form-label" for="left">Crop Left</label>
+                    <input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
+                    <input id="left" data-slider-id='leftSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.LeftCrop" />
                 </div>
-                <div class="col-2">
-                    <label class="col-form-label" for="bottom">Crop Bottom</label>
-                    <input id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
-                    <input id="bottom" data-slider-id='bottomSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-value="@Model.BottomCrop" />
-                </div>
-            </div>
-            <div class="row">
-                <label class="col-form-label" for="right">Crop Right</label>
-                <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
-                <input id="right" data-slider-id='rightSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-value="@Model.RightCrop" />
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-2">
+                            <input id="topVal" value="@Model.TopCrop" style="display:none;" />
+                            <input id="top" data-slider-id='topSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.TopCrop" />
+                            <label class="col-form-label" for="top">Crop Top</label>
 
+                        </div>
+                        <div class="col-8">
+                            <img id="theimage" src="home/image/@Model.Image" />
+                            <input id="Image" type="text" value="@Model.Image" style="display:none;" />
+                        </div>
+                        <div class="col-2">
+                            <label class="col-form-label" for="bottom">Crop Bottom</label>
+                            <input id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
+                            <input id="bottom" data-slider-id='bottomSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.BottomCrop" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="col-form-label" for="right">Crop Right</label>
+                    <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
+                    <input id="right" data-slider-id='rightSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.RightCrop" />
+                </div>
             </div>
         </div>
-
-        <div class="col-sm-12 col-lg-6">
+        <div class="col-lg-5 col-sm-12">
             <ul>
                 <li>FileCreationDateTime:@Model.FileDateTime;</li>
                 <li>ExifDateTime:@Model.ExifDateTime;</li>
@@ -82,7 +102,7 @@
             </ul>
         </div>
     </div>
-    <button type="submit">Save</button>
+
 </form>
 @section scripts {
 
@@ -95,17 +115,37 @@
         }
     function changeImage() {
         var img = document.getElementById("theimage");
+        var fullsize = document.getElementById("fullsizelink")
+        var original = document.getElementById("originallink")
         var rot = document.getElementById("rotVal").value;
         var leftcrop = document.getElementById("leftVal").value;
         var rightcrop = document.getElementById("rightVal").value;
         var topcrop = document.getElementById("topVal").value;
         var bottomcrop = document.getElementById("bottomVal").value;
-        img.src = "home/image/@Model.Image?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot;
+        var screensize = "";
+        if ($(window).width() < 1280) {
+            screensize = "mobile";
+        }
+
+
+        var imgQuery = "?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot;
+
+        var root
+
+        img.src = window.location.origin + "/home/image" + screensize + "/@Model.Image" + imgQuery;
+        fullsize.href = window.location.origin + "/home/imagefull/@Model.Image" + imgQuery;
+        original.href = window.location.origin + "/home/imagefull/@Model.Image";
+
+
     }
 
     $(document).ready(function () {
 
         changeImage();
+
+        $("#target").mouseup(function () {
+            alert("Handler for .mouseup() called.");
+        });
 
         $('#left').slider({
             formatter: function (value) {
@@ -120,7 +160,7 @@
             formatter: function (value) {
                 return 'Current value: ' + value;
             },
-            
+
         });
         $("#right").on("slide", function (slideEvt) {
             $("#rightVal").val(slideEvt.value);
@@ -160,13 +200,13 @@
             // Now execute your AJAX
             $.ajax({
                 type: "POST",
-                url: "home/updateimage",
+                url: "/home/updateimage",
                 data: JSON.stringify(imgData),
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8'
             }).done(function (response) {
                 // handle a successful response
-                alert("yay");
+                Toast.create("Success", "Saved!", TOAST_STATUS.SUCCESS, 2500);
             }).fail(function (xhr, status, message) {
                 // handle a failure response
                 alert("boo");
