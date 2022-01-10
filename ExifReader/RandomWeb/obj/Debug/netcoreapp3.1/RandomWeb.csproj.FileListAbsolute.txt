@@ -44,3 +44,5 @@ C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomW
 C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomWeb\obj\Debug\netcoreapp3.1\RandomWeb.dll
 C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomWeb\obj\Debug\netcoreapp3.1\RandomWeb.pdb
 C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomWeb\obj\Debug\netcoreapp3.1\RandomWeb.genruntimeconfig.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomWeb\bin\Debug\netcoreapp3.1\PhotoArchive.Domain.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\RandomWeb\bin\Debug\netcoreapp3.1\PhotoArchive.Domain.pdb

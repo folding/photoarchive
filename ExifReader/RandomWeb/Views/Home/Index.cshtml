@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-@model RandomWeb.Models.ImageMetaData;
+@model PhotoArchive.Domain.ImageMetaData;
 <style>
     body {
         background-color: slategray;
@@ -88,6 +88,8 @@
             </div>
         </div>
         <div class="col-lg-5 col-sm-12">
+            <img id="thethumb" src="home/image/@Model.Image" />
+            <div id="coords"></div>
             <ul>
                 <li>FileCreationDateTime:@Model.FileDateTime;</li>
                 <li>ExifDateTime:@Model.ExifDateTime;</li>
@@ -142,6 +144,70 @@
     $(document).ready(function () {
 
         changeImage();
+
+        $('img').on("mousemove", function (e) {
+            var offset = $(this).offset();
+            var CX = Math.floor((e.pageX - offset.left));
+            var CY = Math.floor((e.pageY - offset.top));
+
+            var leftcrop = parseInt(document.getElementById("leftVal").value);
+            var topcrop = parseInt(document.getElementById("topVal").value);
+            var rightcrop = parseInt(document.getElementById("rightVal").value);
+            var bottomcrop = parseInt(document.getElementById("bottomVal").value);
+
+            var rot = parseInt(document.getElementById("rotVal").value);
+
+            var screenwidth = $(this).width();
+            var screenheight = $(this).height();
+
+            var croppedwidth = rightcrop - leftcrop;
+            var croppedheight = bottomcrop - topcrop;
+
+            var fullwidth = parseInt("@Model.Width");
+            var fullheight = parseInt("@Model.Height");
+
+            var leftmargin = leftcrop;
+            var topmargin = topcrop;
+
+            var halfsize = 200;
+
+            var tmpleftcrop = leftmargin + Math.floor((CX / screenwidth) * croppedwidth) - halfsize;
+            var tmptopcrop = topmargin + Math.floor((CY / screenheight) * croppedheight) - halfsize;
+            var tmprightcrop = leftmargin + Math.floor((CX / screenwidth) * croppedwidth) + halfsize;
+            var tmpbottomcrop = topmargin + Math.floor((CY / screenheight) * croppedheight) + halfsize;
+
+
+            if (rot == 90) {
+                //rotate right
+                tmpleftcrop = leftmargin + Math.floor((CY / screenheight) * croppedwidth) - halfsize;
+                tmptopcrop = topmargin + Math.floor((screenwidth - CX) / screenwidth * croppedheight) - halfsize;
+                tmprightcrop = leftmargin + Math.floor((CY / screenheight) * croppedwidth) + halfsize;
+                tmpbottomcrop = topmargin + Math.floor((screenwidth - CX)/screenwidth * croppedheight) + halfsize;
+            } else if (rot == 180) {
+                tmpleftcrop = leftmargin + Math.floor((screenwidth - CX) / screenwidth * croppedwidth) - halfsize;
+                tmptopcrop = topmargin + Math.floor(((screenheight - CY) / screenheight) * croppedheight) - halfsize;
+                tmprightcrop = leftmargin + Math.floor((screenwidth - CX) / screenwidth * croppedwidth) + halfsize;
+                tmpbottomcrop = topmargin + Math.floor(((screenheight - CY) / screenheight) * croppedheight) + halfsize;
+            } else if (rot == 270) {
+                tmpleftcrop = leftmargin + Math.floor(((screenheight - CY) / screenheight) * croppedwidth) - halfsize;
+                tmptopcrop = topmargin + Math.floor(CX / screenwidth * croppedheight) - halfsize;
+                tmprightcrop = leftmargin + Math.floor(((screenheight - CY) / screenheight) * croppedwidth) + halfsize;
+                tmpbottomcrop = topmargin + Math.floor(CX / screenwidth * croppedheight) + halfsize;
+            }
+
+            if (tmpleftcrop < 0) { tmpleftcrop = 0; }
+            if (tmprightcrop > fullwidth) { tmprightcrop = fullwidth; }
+            if (tmptopcrop < 0) { tmptopcrop = 0; }
+            if (tmpbottomcrop > fullheight) { tmpbottomcrop = fullheight; }
+
+            var imgQuery = "?crop=" + tmpleftcrop + "," + tmptopcrop + "," + tmprightcrop + "," + tmpbottomcrop + "&rot=" + rot;
+
+            //$('#coords').text(imgQuery);
+
+            var img = document.getElementById("thethumb");
+            img.src = window.location.origin + "/home/image/@Model.Image" + imgQuery;
+
+        });
 
         $("#target").mouseup(function () {
             alert("Handler for .mouseup() called.");

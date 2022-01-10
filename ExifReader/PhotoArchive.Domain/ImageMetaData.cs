@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RandomWeb.Models
+namespace PhotoArchive.Domain
 {
     public class ImageMetaData
     {
@@ -29,14 +29,5 @@ namespace RandomWeb.Models
         //version 2 properties
         public string Version { get; set; }
         public List<ImageCoords> SubImages{get;set;}
-    }
-
-    public class ImageCoords
-    {
-        public int LeftCrop { get; set; }
-        public int RightCrop { get; set; }
-        public int TopCrop { get; set; }
-        public int BottomCrop { get; set; }
-        public int Rotate { get; set; }
     }
 }

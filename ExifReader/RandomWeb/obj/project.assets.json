@@ -1308,6 +1308,16 @@
         "runtime": {
           "lib/netstandard1.3/System.Xml.XDocument.dll": {}
         }
+      },
+      "PhotoArchive.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "compile": {
+          "bin/placeholder/PhotoArchive.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PhotoArchive.Domain.dll": {}
+        }
       }
     }
   },
@@ -4717,13 +4727,19 @@
         "system.xml.xdocument.4.3.0.nupkg.sha512",
         "system.xml.xdocument.nuspec"
       ]
+    },
+    "PhotoArchive.Domain/1.0.0": {
+      "type": "project",
+      "path": "../PhotoArchive.Domain/PhotoArchive.Domain.csproj",
+      "msbuildProject": "../PhotoArchive.Domain/PhotoArchive.Domain.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
       "ExifLibrary >= 1.0.13",
       "Imageflow.AllPlatforms >= 0.7.24",
-      "Newtonsoft.Json >= 13.0.1"
+      "Newtonsoft.Json >= 13.0.1",
+      "PhotoArchive.Domain >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -4751,7 +4767,11 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\foldi\\Dropbox\\John's Docs\\Code Projects\\photoarchive\\ExifReader\\PhotoArchive.Domain\\PhotoArchive.Domain.csproj": {
+              "projectPath": "C:\\Users\\foldi\\Dropbox\\John's Docs\\Code Projects\\photoarchive\\ExifReader\\PhotoArchive.Domain\\PhotoArchive.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

@@ -1,0 +1,9 @@
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\bin\Debug\netcoreapp3.1\PhotoArchive.Domain.deps.json
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\bin\Debug\netcoreapp3.1\PhotoArchive.Domain.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\bin\Debug\netcoreapp3.1\PhotoArchive.Domain.pdb
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.csprojAssemblyReference.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.AssemblyInfoInputs.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.AssemblyInfo.cs
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.csproj.CoreCompileInputs.cache
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.dll
+C:\Users\foldi\Dropbox\John's Docs\Code Projects\photoarchive\ExifReader\PhotoArchive.Domain\obj\Debug\netcoreapp3.1\PhotoArchive.Domain.pdb

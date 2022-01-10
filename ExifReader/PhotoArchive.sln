@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExifReader", "ConsoleApp1\ExifReader.csproj", "{8A5388D1-27A4-433D-94A7-353B0217EB4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandomWeb", "RandomWeb\RandomWeb.csproj", "{B3272C96-4ED2-4326-A619-538398BD7A40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RandomWeb", "RandomWeb\RandomWeb.csproj", "{B3272C96-4ED2-4326-A619-538398BD7A40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoArchive.Domain", "PhotoArchive.Domain\PhotoArchive.Domain.csproj", "{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
