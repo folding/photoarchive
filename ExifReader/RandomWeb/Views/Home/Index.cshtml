@@ -57,16 +57,17 @@
                     <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
                 </div>
                 <div class="col-12">
-                    <label class="col-form-label" for="left">Crop Left</label>
-                    <input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
-                    <input id="left" data-slider-id='leftSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.LeftCrop" />
+                    <label class="col-form-label" for="rightSlider">Crop Right</label>
+                    <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
+                    <input id="rightSlider" data-slider-id='rightSlider' type="text" />
+
                 </div>
                 <div class="col-12">
                     <div class="row">
                         <div class="col-2">
+                            <input id="topSlider" data-slider-id='topSlider' type="text" />
+                            <label class="col-form-label" for="topSlider">Crop Top</label>
                             <input id="topVal" value="@Model.TopCrop" style="display:none;" />
-                            <input id="top" data-slider-id='topSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.TopCrop" />
-                            <label class="col-form-label" for="top">Crop Top</label>
 
                         </div>
                         <div class="col-8">
@@ -74,16 +75,16 @@
                             <input id="Image" type="text" value="@Model.Image" style="display:none;" />
                         </div>
                         <div class="col-2">
-                            <label class="col-form-label" for="bottom">Crop Bottom</label>
+                            <label class="col-form-label" for="bottomSlider">Crop Bottom</label>
                             <input id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
-                            <input id="bottom" data-slider-id='bottomSlider' type="text" data-slider-min="0" data-slider-max="@Model.Height" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.BottomCrop" />
+                            <input id="bottomSlider" data-slider-id='bottomSlider' type="text" />
                         </div>
                     </div>
                 </div>
                 <div class="col-12">
-                    <label class="col-form-label" for="right">Crop Right</label>
-                    <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
-                    <input id="right" data-slider-id='rightSlider' type="text" data-slider-min="0" data-slider-max="@Model.Width" data-slider-step="1" data-slider-handle="custom" data-slider-value="@Model.RightCrop" />
+                    <label class="col-form-label" for="leftSlider">Crop Left</label>
+                    <input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
+                    <input id="leftSlider" data-slider-id='leftSlider' type="text" />
                 </div>
             </div>
         </div>
@@ -109,12 +110,13 @@
 @section scripts {
 
     <script>
-        var imgData={ };
-        function setRotation(rot) {
+        var imgData = {};
+        var leftSlider = {};
+        var rightSlider = {};
+        var topSlider = {};
+        var bottomSlider = {};
 
-            $("#rotVal").val(rot);
-            changeImage();
-        }
+
     function changeImage() {
         var img = document.getElementById("theimage");
         var fullsize = document.getElementById("fullsizelink")
@@ -129,27 +131,255 @@
             screensize = "mobile";
         }
 
-
         var imgQuery = "?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot;
-
-        var root
 
         img.src = window.location.origin + "/home/image" + screensize + "/@Model.Image" + imgQuery;
         fullsize.href = window.location.origin + "/home/imagefull/@Model.Image" + imgQuery;
         original.href = window.location.origin + "/home/imagefull/@Model.Image";
+    }
+    function setRotation(rot) {
 
+        $("#rotVal").val(rot);
 
+        switch (rot) {
+            case 0:
+                //right(on the top)
+                rightSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                rightSlider.bootstrapSlider("refresh");
+                rightSlider.bootstrapSlider("setValue", $("#rightVal").val());
+                rightSlider.off("slide");
+                rightSlider.on("slide", function (slideEvt) {
+                    $("#rightVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //bottom(on the right)
+                bottomSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                bottomSlider.bootstrapSlider("refresh");
+                bottomSlider.bootstrapSlider("setValue", $("#bottomVal").val());
+                bottomSlider.off("slide");
+                bottomSlider.on("slide", function (slideEvt) {
+                    $("#bottomVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //left(on the bottom)
+                leftSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                leftSlider.bootstrapSlider("refresh");
+                leftSlider.bootstrapSlider("setValue", $("#leftVal").val());
+                leftSlider.off("slide");
+                leftSlider.on("slide", function (slideEvt) {
+                    $("#leftVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //top(on the left)
+                topSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                topSlider.bootstrapSlider("refresh");
+                topSlider.bootstrapSlider("setValue", $("#topVal").val());
+                topSlider.off("slide");
+                topSlider.on("slide", function (slideEvt) {
+                    $("#topVal").val(slideEvt.value);
+                    changeImage();
+                });
+                break;
+            case 90:
+                //right(on the top) - now controls top
+                var tc = @Model.Height-$("#topVal").val();
+                rightSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                rightSlider.bootstrapSlider("refresh");
+                rightSlider.bootstrapSlider("setValue", tc);
+                rightSlider.off("slide");
+                rightSlider.on("slide", function (slideEvt) {
+                    $("#topVal").val(@Model.Height-slideEvt.value);
+                    changeImage();
+                });
+                //bottom(on the right) - now controls right
+                var rc = $("#rightVal").val();
+                bottomSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                bottomSlider.bootstrapSlider("refresh");
+                bottomSlider.bootstrapSlider("setValue", rc);
+                bottomSlider.off("slide");
+                bottomSlider.on("slide", function (slideEvt) {
+                    $("#rightVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //left(on the bottom) - now controls bottom
+                var bc = @Model.Height-$("#bottomVal").val();
+                leftSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                leftSlider.bootstrapSlider("refresh");
+                leftSlider.bootstrapSlider("setValue", bc);
+                leftSlider.off("slide");
+                leftSlider.on("slide", function (slideEvt) {
+                    $("#bottomVal").val(@Model.Height-slideEvt.value);
+                    changeImage();
+                });
+                //top(on the left) - now controls left
+                topSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                topSlider.bootstrapSlider("refresh");
+                topSlider.bootstrapSlider("setValue", $("#leftVal").val());
+                topSlider.off("slide");
+                topSlider.on("slide", function (slideEvt) {
+                    $("#leftVal").val(slideEvt.value);
+                    changeImage();
+                });
+                break;
+            case 180:
+                //right(on the top) - now controls left
+                rightSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                rightSlider.bootstrapSlider("refresh");
+                rightSlider.bootstrapSlider("setValue", @Model.Width-$("#leftVal").val());
+                rightSlider.off("slide");
+                rightSlider.on("slide", function (slideEvt) {
+                    $("#leftVal").val(@Model.Width-slideEvt.value);
+                    changeImage();
+                });
+                //bottom(on the right) - now controls top
+                bottomSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                bottomSlider.bootstrapSlider("refresh");
+                bottomSlider.bootstrapSlider("setValue", @Model.Height-$("#topVal").val());
+                bottomSlider.off("slide");
+                bottomSlider.on("slide", function (slideEvt) {
+                    $("#topVal").val(@Model.Height-slideEvt.value);
+                    changeImage();
+                });
+                //left(on the bottom) - now controls right
+                leftSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                leftSlider.bootstrapSlider("refresh");
+                leftSlider.bootstrapSlider("setValue", @Model.Width-$("#rightVal").val());
+                leftSlider.off("slide");
+                leftSlider.on("slide", function (slideEvt) {
+                    $("#rightVal").val(@Model.Width-slideEvt.value);
+                    changeImage();
+                });
+                //top(on the left) - now controls bottom
+                topSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                topSlider.bootstrapSlider("refresh");
+                topSlider.bootstrapSlider("setValue", @Model.Height-$("#bottomVal").val());
+                topSlider.off("slide");
+                topSlider.on("slide", function (slideEvt) {
+                    $("#bottomVal").val(@Model.Height-slideEvt.value);
+                    changeImage();
+                });
+                break;
+            case 270:
+                //right(on the top) - now controls bottom
+                rightSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                rightSlider.bootstrapSlider("refresh");
+                rightSlider.bootstrapSlider("setValue", $("#bottomVal").val());
+                rightSlider.off("slide");
+                rightSlider.on("slide", function (slideEvt) {
+                    $("#bottomVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //bottom(on the right) - now controls left
+                bottomSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                bottomSlider.bootstrapSlider("refresh");
+                bottomSlider.bootstrapSlider("setValue", @Model.Width-$("#leftVal").val());
+                bottomSlider.off("slide");
+                bottomSlider.on("slide", function (slideEvt) {
+                    $("#leftVal").val(@Model.Width-slideEvt.value);
+                    changeImage();
+                });
+                //left(on the bottom) - now controls top
+                leftSlider.bootstrapSlider("setAttribute", "max", @Model.Height);
+                leftSlider.bootstrapSlider("refresh");
+                leftSlider.bootstrapSlider("setValue", $("#topVal").val());
+                leftSlider.off("slide");
+                leftSlider.on("slide", function (slideEvt) {
+                    $("#topVal").val(slideEvt.value);
+                    changeImage();
+                });
+                //top(on the left) - now control right
+                topSlider.bootstrapSlider("setAttribute", "max", @Model.Width);
+                topSlider.bootstrapSlider("refresh");
+                topSlider.bootstrapSlider("setValue", @Model.Width-$("#rightVal").val());
+                topSlider.off("slide");
+                topSlider.on("slide", function (slideEvt) {
+                    $("#rightVal").val(@Model.Width-slideEvt.value);
+                    changeImage();
+                });
+                break;
+
+        }
+
+        changeImage();
     }
 
     $(document).ready(function () {
 
+        leftSlider = $('#leftSlider').bootstrapSlider({
+            min: 0,
+            max: @Model.Width,
+            value: @Model.LeftCrop,
+            step: 1,
+            handle: "custom",
+            formatter: function (value) {
+                return value + "px";
+            }
+        });
+        leftSlider.on("slide", function (slideEvt) {
+            $("#leftVal").val(slideEvt.value);
+            changeImage();
+        });
+        rightSlider = $('#rightSlider').bootstrapSlider({
+            min: 0,
+            max: @Model.Width,
+            value: @Model.RightCrop,
+            step: 1,
+            handle: "custom",
+            formatter: function (value) {
+                return value + "px";
+            },
+        });
+        rightSlider.on("slide", function (slideEvt) {
+            $("#rightVal").val(slideEvt.value);
+            changeImage();
+        });
+        topSlider = $('#topSlider').bootstrapSlider({
+            min: 0,
+            max: @Model.Height,
+            value: @Model.TopCrop,
+            step: 1,
+            handle: "custom",
+            orientation: 'vertical',
+            formatter: function (value) {
+                return value + "px";
+            }
+        });
+        topSlider.on("slide", function (slideEvt) {
+            $("#topVal").val(slideEvt.value);
+            changeImage();
+        });
+        bottomSlider = $('#bottomSlider').bootstrapSlider({
+            min: 0,
+            max: @Model.Height,
+            value: @Model.BottomCrop,
+            step: 1,
+            handle: "custom",
+            orientation: 'vertical',
+            tooltip_position: 'left',
+            formatter: function (value) {
+                return value + "px";
+            }
+        });
+        bottomSlider.on("slide", function (slideEvt) {
+            $("#bottomVal").val(slideEvt.value);
+            changeImage();
+        });
+
+        //make sure to rotate the sliders to match initial rotation
+        var rot = parseInt(document.getElementById("rotVal").value);
+        setRotation(rot);
+
+        //load the cropped/rotated image
         changeImage();
 
-        $('img').on("mousemove", function (e) {
+        //hover for closeup
+        $('#theimage').on("mousemove", function (e) {
             var offset = $(this).offset();
+            //screen image x,y
             var CX = Math.floor((e.pageX - offset.left));
             var CY = Math.floor((e.pageY - offset.top));
 
+            //fullsize image crops
             var leftcrop = parseInt(document.getElementById("leftVal").value);
             var topcrop = parseInt(document.getElementById("topVal").value);
             var rightcrop = parseInt(document.getElementById("rightVal").value);
@@ -157,25 +387,30 @@
 
             var rot = parseInt(document.getElementById("rotVal").value);
 
+            //image width on screen
             var screenwidth = $(this).width();
             var screenheight = $(this).height();
 
+            //fullsize image cropped
             var croppedwidth = rightcrop - leftcrop;
             var croppedheight = bottomcrop - topcrop;
 
+            //fullsize image uncropped
             var fullwidth = parseInt("@Model.Width");
             var fullheight = parseInt("@Model.Height");
 
+            //fullsize image crop/margins
             var leftmargin = leftcrop;
             var topmargin = topcrop;
 
+            //half the size of the width/height of the zoomed image
             var halfsize = 200;
 
+            //find crops in fullsize image based on screen x,y
             var tmpleftcrop = leftmargin + Math.floor((CX / screenwidth) * croppedwidth) - halfsize;
             var tmptopcrop = topmargin + Math.floor((CY / screenheight) * croppedheight) - halfsize;
             var tmprightcrop = leftmargin + Math.floor((CX / screenwidth) * croppedwidth) + halfsize;
             var tmpbottomcrop = topmargin + Math.floor((CY / screenheight) * croppedheight) + halfsize;
-
 
             if (rot == 90) {
                 //rotate right
@@ -195,6 +430,7 @@
                 tmpbottomcrop = topmargin + Math.floor(CX / screenwidth * croppedheight) + halfsize;
             }
 
+            //make sure we don't go over the edge
             if (tmpleftcrop < 0) { tmpleftcrop = 0; }
             if (tmprightcrop > fullwidth) { tmprightcrop = fullwidth; }
             if (tmptopcrop < 0) { tmptopcrop = 0; }
@@ -213,46 +449,6 @@
             alert("Handler for .mouseup() called.");
         });
 
-        $('#left').slider({
-            formatter: function (value) {
-                return 'Current value: ' + value;
-            }
-        });
-        $("#left").on("slide", function (slideEvt) {
-            $("#leftVal").val(slideEvt.value);
-            changeImage();
-        });
-        $('#right').slider({
-            formatter: function (value) {
-                return 'Current value: ' + value;
-            },
-
-        });
-        $("#right").on("slide", function (slideEvt) {
-            $("#rightVal").val(slideEvt.value);
-            changeImage();
-        });
-        $('#top').slider({
-            orientation: 'vertical',
-            formatter: function (value) {
-                return 'Current value: ' + value;
-            }
-        });
-        $("#top").on("slide", function (slideEvt) {
-            $("#topVal").val(slideEvt.value);
-            changeImage();
-        });
-        $('#bottom').slider({
-            orientation: 'vertical',
-            tooltip_position: 'left',
-            formatter: function (value) {
-                return 'Current value: ' + value;
-            }
-        });
-        $("#bottom").on("slide", function (slideEvt) {
-            $("#bottomVal").val(slideEvt.value);
-            changeImage();
-        });
 
         $("#imgform").submit(function (e) {
             // here's where you stop the default submit action of the form

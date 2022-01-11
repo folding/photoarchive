@@ -318,7 +318,7 @@ namespace RandomWeb
 
         private List<string> GetInvalidExtentions()
         {
-            var exceptions = new List<string>() { ".json", ".aae", ".mov" };
+            var exceptions = new List<string>() { ".json", ".aae", ".mov", ".pdf" };
             //var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
             //_readWriteLock.EnterReadLock();
             //try
