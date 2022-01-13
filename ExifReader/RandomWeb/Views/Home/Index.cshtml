@@ -133,7 +133,7 @@
             screensize = "mobile";
         }
 
-        var imgQuery = "?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot + "&rot2=" + rot2;
+        var imgQuery = "?" + encodeURI("crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot + "&rot2=" + rot2);
 
         img.src = window.location.origin + "/home/image" + screensize + "/@Model.Image" + imgQuery;
         fullsize.href = window.location.origin + "/home/imagefull/@Model.Image" + imgQuery;
@@ -537,7 +537,7 @@
             //collect all our image properties
             imgData.Image = $("#Image").val();
             imgData.Rotate = parseInt($("#rotVal").val());
-            imgData.Rotate2 = $("#rot2Val").val();
+            imgData.Rotate2 = parseFloat($("#rot2Val").val());
             imgData.LeftCrop = parseInt($("#leftVal").val());
             imgData.TopCrop = parseInt($("#topVal").val());
             imgData.RightCrop = parseInt($("#rightVal").val());
@@ -568,6 +568,7 @@
             var bottomcrop = parseInt(document.getElementById("bottomVal").value);
 
             var rot = parseInt(document.getElementById("rotVal").value);
+            var rot2 = parseInt(document.getElementById("rot2Val").value);
 
             //image width on screen
             var screenwidth = $("#theimage").width();
@@ -624,7 +625,7 @@
             if (tmptopcrop < 0) { tmptopcrop = 0; }
             if (tmpbottomcrop > fullheight) { tmpbottomcrop = fullheight; }
 
-            var imgQuery = "?crop=" + tmpleftcrop + "," + tmptopcrop + "," + tmprightcrop + "," + tmpbottomcrop + "&rot=" + rot;
+            var imgQuery = "?" + encodeURI("crop=" + tmpleftcrop + "," + tmptopcrop + "," + tmprightcrop + "," + tmpbottomcrop + "&rot=" + rot + "&rot2=" + rot2);
 
             //$('#coords').text(imgQuery);
 

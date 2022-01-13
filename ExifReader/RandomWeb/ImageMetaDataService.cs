@@ -334,18 +334,20 @@ namespace RandomWeb
                     //calculate the distortion so:
                     // image is the same size afterwards
                     // image is zoomed so there isn't any dead space in the corners
-                    var w = info.ImageWidth;//original image width
-                    var h = info.ImageHeight;//original image height
-                    if(rotate1 == 90 || rotate1 == 270)//did we rotate? swap the values;
-                    {
-                        w = info.ImageHeight;
-                        h = info.ImageWidth;
-                    }
-                    double angle = rotate2; //negative is counter-clockwise
-                    var aa = angle * Math.PI / 180;
-                    var n = (w * Math.Abs(Math.Sin(aa)) + h * Math.Abs(Math.Cos(aa))) / Math.Min(w, h);
+                    var w = image.Width;
+                    var h = image.Height;
 
-                    image.Distort(DistortMethod.ScaleRotateTranslate, new double[] { n, angle });
+                    double angle = rotate2; //negative is counter-clockwise
+                    var aa = angle * Math.PI / 180;//convert to radians
+
+                    //TODO: This is dumb.  Depending on rotation (0,90,180,270) I think we need to handle only one
+                    // of these next calculations.. one ends up like 1.02 and the other 1.3!  1.3 is tooo much so 
+                    // I'm just taking the smaller one for now until I'm smarter...sigh
+                    var scaleFactor1 = (w * Math.Abs(Math.Sin(aa)) + h * Math.Abs(Math.Cos(aa))) / Math.Min(w, h);
+                    var scaleFactor2 = (w * Math.Abs(Math.Cos(aa)) + h * Math.Abs(Math.Sin(aa))) / Math.Min(w, h);
+                    var scaleFactor = Math.Min(scaleFactor1, scaleFactor2);
+
+                    image.Distort(DistortMethod.ScaleRotateTranslate, new double[] { scaleFactor, angle });
 
                     // Save the result
                     imageBytes = image.ToByteArray();
