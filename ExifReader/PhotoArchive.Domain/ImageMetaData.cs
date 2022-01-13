@@ -29,5 +29,8 @@ namespace PhotoArchive.Domain
         //version 2 properties
         public string Version { get; set; }
         public List<ImageCoords> SubImages{get;set;}
+
+        //version 3 properties
+        public double Rotate2 { get; set; }
     }
 }

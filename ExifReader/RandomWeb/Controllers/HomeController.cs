@@ -14,6 +14,7 @@ using Imageflow.Fluent;
 using Microsoft.AspNetCore.Hosting;
 using System.Threading;
 using PhotoArchive.Domain;
+using ImageMagick;
 
 namespace RandomWeb.Controllers
 {
@@ -76,7 +77,7 @@ namespace RandomWeb.Controllers
 
             int leftCrop = -1
                , rightCrop = -1, topCrop = -1, bottomCrop=-1, rotate=0;
-
+            double rotate2 = 0.0;
             foreach(var q in querystring)
             {
                 if (q.Key == "rot")
@@ -85,6 +86,14 @@ namespace RandomWeb.Controllers
                     if (int.TryParse(q.Value, out tmp))
                     {
                         rotate = tmp;
+                    }
+                }
+                else if (q.Key == "rot2")
+                {
+                    double tmp = 0;
+                    if (double.TryParse(q.Value, out tmp))
+                    {
+                        rotate2 = tmp;
                     }
                 }
                 else if (q.Key == "crop")
@@ -101,7 +110,8 @@ namespace RandomWeb.Controllers
                 }
             }
 
-            byte[] imageBytes = MetaDataService.GetTransformedImage(id,maxWidth,maxHeight,rotate,leftCrop,topCrop,rightCrop,bottomCrop);
+            byte[] imageBytes = MetaDataService.GetTransformedImage(id,maxWidth,maxHeight,rotate,rotate2,leftCrop,topCrop,rightCrop,bottomCrop);
+
 
             return base.File(imageBytes, "image/jpeg");
         }
@@ -115,7 +125,8 @@ namespace RandomWeb.Controllers
                 LeftCrop = data.LeftCrop,
                 RightCrop = data.RightCrop,
                 TopCrop = data.TopCrop,
-                Rotate = data.Rotate
+                Rotate = data.Rotate,
+                Rotate2 = data.Rotate2
             };
 
             MetaDataService.UpdateCrop(data.Image, newCrop);

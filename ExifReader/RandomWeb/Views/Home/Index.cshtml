@@ -53,10 +53,14 @@
                     <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
                 </div>
                 <div class="col-12">
+                    <label class="col-form-label" for="rotationSlider">Angle Correction</label>
+                    <input id="rot2Val" value="@Model.Rotate2" style="display:none;" />
+                    <input id="rotationSlider" data-slider-id='rotationSlider' type="text" />
+                </div>
+                <div class="col-12">
                     <label class="col-form-label" for="rightSlider">Crop Right</label>
                     <input id="rightVal" value="@Model.RightCrop" style="display:none;" />
                     <input id="rightSlider" data-slider-id='rightSlider' type="text" />
-
                 </div>
                 <div class="col-12">
                     <div class="row">
@@ -85,7 +89,7 @@
             </div>
         </div>
         <div class="col-lg-5 col-sm-12">
-            <img id="thethumb" src="home/image/@Model.Image" />
+            <img id="thethumb" src="/home/image/@Model.Image" />
             <div id="coords"></div>
             <ul>
                 <li>@Model.Path</li>
@@ -119,6 +123,7 @@
         var fullsize = document.getElementById("fullsizelink")
         var original = document.getElementById("originallink")
         var rot = document.getElementById("rotVal").value;
+        var rot2 = document.getElementById("rot2Val").value;
         var leftcrop = document.getElementById("leftVal").value;
         var rightcrop = document.getElementById("rightVal").value;
         var topcrop = document.getElementById("topVal").value;
@@ -128,7 +133,7 @@
             screensize = "mobile";
         }
 
-        var imgQuery = "?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot;
+        var imgQuery = "?crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot + "&rot2=" + rot2;
 
         img.src = window.location.origin + "/home/image" + screensize + "/@Model.Image" + imgQuery;
         fullsize.href = window.location.origin + "/home/imagefull/@Model.Image" + imgQuery;
@@ -320,6 +325,20 @@
 
     $(document).ready(function () {
 
+        rotationSlider = $('#rotationSlider').bootstrapSlider({
+            min: -10,
+            max: 10,
+            value: @Model.Rotate2,
+            step: 0.1,
+            handle: "custom",
+            formatter: function (value) {
+                return value + "°";
+            }
+        });
+        rotationSlider.on("slide", function (slideEvt) {
+            $("#rot2Val").val(slideEvt.value);
+            changeImage();
+        });
         leftSlider = $('#leftSlider').bootstrapSlider({
             min: 0,
             max: @Model.Width,
@@ -513,18 +532,22 @@
 
         $("#imgform").submit(function (e) {
             // here's where you stop the default submit action of the form
+            e.preventDefault();
+
+            //collect all our image properties
             imgData.Image = $("#Image").val();
             imgData.Rotate = parseInt($("#rotVal").val());
+            imgData.Rotate2 = $("#rot2Val").val();
             imgData.LeftCrop = parseInt($("#leftVal").val());
             imgData.TopCrop = parseInt($("#topVal").val());
             imgData.RightCrop = parseInt($("#rightVal").val());
             imgData.BottomCrop = parseInt($("#bottomVal").val());
-            e.preventDefault();
+            thedata = JSON.stringify(imgData);
             // Now execute your AJAX
             $.ajax({
                 type: "POST",
                 url: "/home/updateimage",
-                data: JSON.stringify(imgData),
+                data: thedata,
                 dataType: 'json',
                 contentType: 'application/json; charset=utf-8'
             }).done(function (response) {

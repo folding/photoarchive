@@ -1,5 +1,6 @@
 ﻿using ExifLibrary;
 using Imageflow.Fluent;
+using ImageMagick;
 using Newtonsoft.Json;
 using PhotoArchive.Domain;
 using System;
@@ -47,6 +48,7 @@ namespace RandomWeb
             fileMetaData.RightCrop = newCrop.RightCrop;
             fileMetaData.TopCrop = newCrop.TopCrop;
             fileMetaData.Rotate = newCrop.Rotate;
+            fileMetaData.Rotate2 = newCrop.Rotate2;
 
             System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(fileMetaData, Formatting.Indented));
 
@@ -150,6 +152,8 @@ namespace RandomWeb
                 //convert v1 to v2
                 if (string.IsNullOrEmpty(fileMetaData.Version))
                 {
+                    fileMetaData.Version = "2";
+
                     var subimage = new ImageCoords()
                     {
                         BottomCrop = fileMetaData.BottomCrop,
@@ -159,9 +163,15 @@ namespace RandomWeb
                         Rotate = fileMetaData.Rotate
                     };
 
-                    fileMetaData.Version = "2";
                     fileMetaData.SubImages = new List<ImageCoords>();
                     fileMetaData.SubImages.Add(subimage);
+                }
+
+                //convert version 2 to 3
+                if(fileMetaData.Version == "2")
+                {
+                    fileMetaData.Version = "3";
+                    fileMetaData.Rotate2 = 0.0;
                 }
 
                 imageMetaData = fileMetaData;
@@ -170,13 +180,13 @@ namespace RandomWeb
             {
                 string exifJson = JsonConvert.SerializeObject(exifData, Newtonsoft.Json.Formatting.Indented);
 
-                imageMetaData.ISOSpeedRatings = GetPropertyBruteForce(exifData, ExifTag.ISOSpeedRatings);
-                imageMetaData.PixelXDimension = GetPropertyBruteForce(exifData, ExifTag.PixelXDimension);
-                imageMetaData.PixelYDimension = GetPropertyBruteForce(exifData, ExifTag.PixelYDimension);
-                imageMetaData.GPSAltitude = GetPropertyBruteForce(exifData, ExifTag.GPSAltitude) + "m " + GetPropertyBruteForce(exifData, ExifTag.GPSAltitudeRef);
-                imageMetaData.GPSLatitude = GetPropertyBruteForce(exifData, ExifTag.GPSLatitude) + " " + GetPropertyBruteForce(exifData, ExifTag.GPSLatitudeRef);
-                imageMetaData.GPSLongitude = GetPropertyBruteForce(exifData, ExifTag.GPSLongitude) + " " + GetPropertyBruteForce(exifData, ExifTag.GPSLongitudeRef);
-                imageMetaData.ExifDateTime = GetPropertyBruteForce(exifData, ExifTag.DateTime);
+                imageMetaData.ISOSpeedRatings = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.ISOSpeedRatings);
+                imageMetaData.PixelXDimension = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.PixelXDimension);
+                imageMetaData.PixelYDimension = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.PixelYDimension);
+                imageMetaData.GPSAltitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSAltitude) + "m " + GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSAltitudeRef);
+                imageMetaData.GPSLatitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLatitude) + " " + GetPropertyBruteForce(exifData,  ExifLibrary.ExifTag.GPSLatitudeRef);
+                imageMetaData.GPSLongitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLongitude) + " " + GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLongitudeRef);
+                imageMetaData.ExifDateTime = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.DateTime);
             }
             imageMetaData.Image = $"{folderId}-{imageId}";
 
@@ -213,7 +223,7 @@ namespace RandomWeb
             return imageMetaData;
         }
 
-        internal byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate = 0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
+        internal byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
         {
             int folderId = int.Parse(id.Split('-')[0]);
             int imageId = int.Parse(id.Split('-')[1]);
@@ -229,11 +239,12 @@ namespace RandomWeb
             var notloaded = true;
             var reverseCrop = false;
 
+            var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
+
             while (notloaded)
             {
                 try
                 {
-                    var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
                     using (var b = new ImageJob())
                     {
                         var buildNode = b.Decode(imageBytes);
@@ -261,7 +272,7 @@ namespace RandomWeb
                             }
                         }
 
-                        switch (rotate)
+                        switch (rotate1)
                         {
                             case 90:
                                 buildNode = buildNode.Rotate90();
@@ -314,8 +325,32 @@ namespace RandomWeb
                     }
                 }
             }
-            //var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
-            //var mimeType = info.PreferredMimeType;
+
+            if (rotate2 != 0.0)
+            {
+                using (var image = new MagickImage(imageBytes))
+                {
+                    //https://legacy.imagemagick.org/Usage/photos/#rotation
+                    //calculate the distortion so:
+                    // image is the same size afterwards
+                    // image is zoomed so there isn't any dead space in the corners
+                    var w = info.ImageWidth;//original image width
+                    var h = info.ImageHeight;//original image height
+                    if(rotate1 == 90 || rotate1 == 270)//did we rotate? swap the values;
+                    {
+                        w = info.ImageHeight;
+                        h = info.ImageWidth;
+                    }
+                    double angle = rotate2; //negative is counter-clockwise
+                    var aa = angle * Math.PI / 180;
+                    var n = (w * Math.Abs(Math.Sin(aa)) + h * Math.Abs(Math.Cos(aa))) / Math.Min(w, h);
+
+                    image.Distort(DistortMethod.ScaleRotateTranslate, new double[] { n, angle });
+
+                    // Save the result
+                    imageBytes = image.ToByteArray();
+                }
+            }
 
             return imageBytes;
         }
@@ -337,7 +372,7 @@ namespace RandomWeb
 
         private List<string> GetInvalidExtentions()
         {
-            var exceptions = new List<string>() { ".json", ".aae", ".mov", ".pdf" };
+            var exceptions = new List<string>() { ".json", ".aae", ".mov", ".pdf", ".bmp" };
             //var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
             //_readWriteLock.EnterReadLock();
             //try
@@ -368,21 +403,21 @@ namespace RandomWeb
             //}
         }
 
-        private string GetPropertyBruteForce(ImageFile file, ExifTag tag)
+        private string GetPropertyBruteForce(ImageFile file, ExifLibrary.ExifTag tag)
         {
             foreach (var property in file.Properties)
             {
                 if (property.Tag == tag)
                 {
-                    if (tag == ExifTag.GPSLatitude
-                        || tag == ExifTag.GPSLongitude)
+                    if (tag == ExifLibrary.ExifTag.GPSLatitude
+                        || tag == ExifLibrary.ExifTag.GPSLongitude)
                     {
                         return ((GPSLatitudeLongitude)property).Degrees.Numerator.ToString() + "° " +
                             ((GPSLatitudeLongitude)property).Minutes.Numerator.ToString() + "' " +
                             ((GPSLatitudeLongitude)property).Seconds.Numerator.ToString();
                     }
 
-                    if (tag == ExifTag.GPSAltitude)
+                    if (tag == ExifLibrary.ExifTag.GPSAltitude)
                     {
                         return (((((MathEx.UFraction32)property.Value).Numerator * 100.0) / ((MathEx.UFraction32)property.Value).Denominator) / 100.0).ToString("N2");
                     }
