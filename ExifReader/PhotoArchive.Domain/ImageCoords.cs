@@ -7,5 +7,6 @@
         public int TopCrop { get; set; }
         public int BottomCrop { get; set; }
         public int Rotate { get; set; }
+        public double Rotate2 { get; set; }
     }
 }
