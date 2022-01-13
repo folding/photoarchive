@@ -38,10 +38,6 @@
         }
 </style>
 <form id="imgform">
-    <div class="text-left">
-        <p class="font-weight-bold font-italic text-center">@Model.Path</p>
-    </div>
-
     <div class="row">
         <div class="col-lg-7 col-sm-12">
             <div class="row">
@@ -92,6 +88,7 @@
             <img id="thethumb" src="home/image/@Model.Image" />
             <div id="coords"></div>
             <ul>
+                <li>@Model.Path</li>
                 <li>FileCreationDateTime:@Model.FileDateTime;</li>
                 <li>ExifDateTime:@Model.ExifDateTime;</li>
                 <li>Width:@Model.Width;</li>
@@ -138,6 +135,24 @@
         original.href = window.location.origin + "/home/imagefull/@Model.Image";
     }
     function setRotation(rot) {
+
+
+        if (rot < 0) {
+            rot += 360;
+        }
+        else if (rot > 270) {
+            rot %= 360;
+        }
+
+        if (rot == 360) {
+            rot = 0;
+        }
+
+        var currentrot = $("#rotVal").val();
+
+        if (currentrot == rot) {
+            return;
+        }
 
         $("#rotVal").val(rot);
 
@@ -371,6 +386,115 @@
 
         //load the cropped/rotated image
         changeImage();
+        var aDown = false;
+        var sDown = false;
+        var dDown = false;
+        $("body").keydown(function (event) {
+
+            switch (event.which) {
+                case 65://a
+                    aDown = true;
+                    break;
+                case 83://s
+                    sDown = true;
+                    break;
+                case 68://d
+                    dDown = true;
+                    break;
+            }
+            //console.log(event.which);
+        });
+
+        $("body").keypress(function (event) {
+
+            //console.log(event.which);
+        });
+
+        $("body").keyup(function (event) {
+
+            console.log(event.which);
+
+            var currentrot = parseInt(document.getElementById("rotVal").value);
+            switch (event.which) {
+
+                case 65://a
+                    aDown = false;
+                    break;
+                case 83://s
+                    sDown = false;
+                    break;
+                case 68://d
+                    sDown = false;
+                    break;
+                case 74://j
+
+                    if (aDown && sDown) {
+                        //move left slider left
+                        var left = leftSlider.bootstrapSlider("getValue");
+                        leftSlider.bootstrapSlider("setValue", left - 1, true, true);
+                        setZoomXY(0, $("#theimage").height() / 2, 200, 0)
+                    }
+                    else if (dDown && sDown) {
+                        //move right slider left
+                        var right = rightSlider.bootstrapSlider("getValue");
+                        rightSlider.bootstrapSlider("setValue", right - 1, true, true);
+                        setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
+                    }
+                    else if (aDown) {
+                        //move left slider left
+                        var left = leftSlider.bootstrapSlider("getValue");
+                        leftSlider.bootstrapSlider("setValue", left - 10, true, true);
+                        setZoomXY(0, $("#theimage").height() / 2, 200, 0)
+                    }
+                    else if (dDown) {
+                        //move right slider left
+                        var right = rightSlider.bootstrapSlider("getValue");
+                        rightSlider.bootstrapSlider("setValue", right - 10, true, true);
+                        setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
+                    }
+                    else {
+                        currentrot -= 90;
+                    }
+                    break;
+                case 75://k
+                    currentrot = 180;
+                    break;
+                case 76://l
+
+                    if (aDown && sDown) {
+                        //move left slider right
+                        var left = leftSlider.bootstrapSlider("getValue");
+                        leftSlider.bootstrapSlider("setValue", left + 1, true, true);//https://stackoverflow.com/a/47411403
+                        setZoomXY(0, $("#theimage").height() / 2, 200, 0)
+                    }
+                    else if (dDown && sDown) {
+                        //move right slider right
+                        var right = rightSlider.bootstrapSlider("getValue");
+                        rightSlider.bootstrapSlider("setValue", right + 1, true, true);//https://stackoverflow.com/a/47411403
+                        setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
+                    }
+                    else if (dDown) {
+                        //move right slider right
+                        var right = rightSlider.bootstrapSlider("getValue");
+                        rightSlider.bootstrapSlider("setValue", right + 10, true, true);//https://stackoverflow.com/a/47411403
+                        setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
+                    }
+                    else if (aDown) {
+                        //move left slider right
+                        var left = leftSlider.bootstrapSlider("getValue");
+                        leftSlider.bootstrapSlider("setValue", left + 10, true, true);//https://stackoverflow.com/a/47411403
+                        setZoomXY(0,$("#theimage").height()/2,200,0)
+                    }
+                    else {
+                        currentrot += 90;
+                    }
+                    break;
+            }
+
+
+            setRotation(currentrot);
+        });
+
 
         //hover for closeup
         $('#theimage').on("mousemove", function (e) {
@@ -378,6 +502,41 @@
             //screen image x,y
             var CX = Math.floor((e.pageX - offset.left));
             var CY = Math.floor((e.pageY - offset.top));
+            setZoomXY(CX, CY,0,0);
+
+        });
+
+        $("#target").mouseup(function () {
+            alert("Handler for .mouseup() called.");
+        });
+
+
+        $("#imgform").submit(function (e) {
+            // here's where you stop the default submit action of the form
+            imgData.Image = $("#Image").val();
+            imgData.Rotate = parseInt($("#rotVal").val());
+            imgData.LeftCrop = parseInt($("#leftVal").val());
+            imgData.TopCrop = parseInt($("#topVal").val());
+            imgData.RightCrop = parseInt($("#rightVal").val());
+            imgData.BottomCrop = parseInt($("#bottomVal").val());
+            e.preventDefault();
+            // Now execute your AJAX
+            $.ajax({
+                type: "POST",
+                url: "/home/updateimage",
+                data: JSON.stringify(imgData),
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8'
+            }).done(function (response) {
+                // handle a successful response
+                Toast.create("Success", "Saved!", TOAST_STATUS.SUCCESS, 2500);
+            }).fail(function (xhr, status, message) {
+                // handle a failure response
+                alert("boo");
+            });
+        });
+    });
+        function setZoomXY(CX, CY, TX, TY) {
 
             //fullsize image crops
             var leftcrop = parseInt(document.getElementById("leftVal").value);
@@ -388,8 +547,8 @@
             var rot = parseInt(document.getElementById("rotVal").value);
 
             //image width on screen
-            var screenwidth = $(this).width();
-            var screenheight = $(this).height();
+            var screenwidth = $("#theimage").width();
+            var screenheight = $("#theimage").height();
 
             //fullsize image cropped
             var croppedwidth = rightcrop - leftcrop;
@@ -430,6 +589,12 @@
                 tmpbottomcrop = topmargin + Math.floor(CX / screenwidth * croppedheight) + halfsize;
             }
 
+            //use TX,TY to translate the crop
+            tmpleftcrop += TX;
+            tmprightcrop += TX;
+            tmptopcrop += TY;
+            tmpbottomcrop += TY;
+
             //make sure we don't go over the edge
             if (tmpleftcrop < 0) { tmpleftcrop = 0; }
             if (tmprightcrop > fullwidth) { tmprightcrop = fullwidth; }
@@ -442,38 +607,6 @@
 
             var img = document.getElementById("thethumb");
             img.src = window.location.origin + "/home/image/@Model.Image" + imgQuery;
-
-        });
-
-        $("#target").mouseup(function () {
-            alert("Handler for .mouseup() called.");
-        });
-
-
-        $("#imgform").submit(function (e) {
-            // here's where you stop the default submit action of the form
-            imgData.Image = $("#Image").val();
-            imgData.Rotate = parseInt($("#rotVal").val());
-            imgData.LeftCrop = parseInt($("#leftVal").val());
-            imgData.TopCrop = parseInt($("#topVal").val());
-            imgData.RightCrop = parseInt($("#rightVal").val());
-            imgData.BottomCrop = parseInt($("#bottomVal").val());
-            e.preventDefault();
-            // Now execute your AJAX
-            $.ajax({
-                type: "POST",
-                url: "/home/updateimage",
-                data: JSON.stringify(imgData),
-                dataType: 'json',
-                contentType: 'application/json; charset=utf-8'
-            }).done(function (response) {
-                // handle a successful response
-                Toast.create("Success", "Saved!", TOAST_STATUS.SUCCESS, 2500);
-            }).fail(function (xhr, status, message) {
-                // handle a failure response
-                alert("boo");
-            });
-        });
-    });
+        }
     </script>
 }

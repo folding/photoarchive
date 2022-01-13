@@ -82,13 +82,32 @@ namespace RandomWeb
                 {
                     try
                     {
-                        folderId = random.Next(0, folders.Count());
 
-                        pictures = System.IO.Directory.GetFiles(folders[folderId]);
+                        Dictionary<string, Tuple<int,int>> allfiles =   new Dictionary<string, Tuple<int,int>>();
 
-                        imageId = random.Next(0, pictures.Count());
+                        int foId = 0;
+                        foreach (var f in folders)
+                        {
+                            
+                            List<string> folderfiles = System.IO.Directory.GetFiles(f).ToList();
 
-                        imagePath = pictures[imageId];
+                            int fiId = 0;
+                            foreach (var ff in folderfiles)
+                            {
+                                allfiles.Add(ff, new Tuple<int, int>(foId,fiId));
+                                fiId++;
+                            }
+                            foId++;
+                        }
+
+                        var rnd = random.Next(0, allfiles.Count);
+
+                        var ras = allfiles.ToArray()[rnd];
+
+                        folderId = ras.Value.Item1;
+                        imageId = ras.Value.Item2;
+
+                        imagePath = ras.Key;
 
                         bool invalid = IsFileInvalid(imagePath);
 
