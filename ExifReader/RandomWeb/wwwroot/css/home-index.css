@@ -1,0 +1,33 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+body {
+    background-color: slategray;
+}
+
+.slider-handle {
+    width: 40px;
+    height: 40px;
+}
+
+/*.slider-handle.custom {
+        background: transparent none;*/
+/* You can customize the handle and set a background image */
+/*}*/
+
+/* Or display content like unicode characters or fontawesome icons */
+/*.slider-handle.custom::before {
+        line-height: 40px;
+        font-size: 40px;
+        content: '\26AB';*/ /*unicode circle character*/
+/*color: #726204;
+    }*/
+
+.slider.slider-horizontal .slider-handle {
+    margin-left: -25px;
+    margin-top: -12px;
+}
+
+.slider.slider-vertical .slider-handle {
+    margin-left: -9px;
+    margin-top: -20px;
+}
