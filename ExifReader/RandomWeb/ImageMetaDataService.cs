@@ -171,7 +171,6 @@ namespace RandomWeb
                 if(fileMetaData.Version == "2")
                 {
                     fileMetaData.Version = "3";
-                    fileMetaData.Rotate2 = 0.0;
                 }
 
                 imageMetaData = fileMetaData;
