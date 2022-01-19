@@ -424,8 +424,32 @@ $(document).ready(function () {
         setRotation(currentrot);
     });
 
+    $('#prevthumb').on("mousemove", function (e) {
+        var img = document.getElementById("thethumb");
+        var thumb = document.getElementById("prevthumb");
 
-    //hover for closeup
+        if (img.src != thumb.src) {
+            img.src = thumb.src.replace("imagethumb", "image");
+        }
+    });
+    $('#thisthumb').on("mousemove", function (e) {
+        var img = document.getElementById("thethumb");
+        var thumb = document.getElementById("thisthumb");
+
+        if (img.src != thumb.src) {
+            img.src = thumb.src.replace("imagethumb", "image");
+        }
+    });
+    $('#nextthumb').on("mousemove", function (e) {
+        var img = document.getElementById("thethumb");
+        var thumb = document.getElementById("nextthumb");
+
+        if (img.src != thumb.src) {
+            img.src = thumb.src.replace("imagethumb","image");
+        }
+    });
+
+    //hover for closeup of main image
     $('#theimage').on("mousemove", function (e) {
         var offset = $(this).offset();
         //screen image x,y
@@ -440,7 +464,7 @@ $(document).ready(function () {
     });
 
 
-    $("#imgform").submit(function (e) {
+    $("#btnSaveCrop").on("click",function (e) {
         // here's where you stop the default submit action of the form
         e.preventDefault();
 
@@ -468,6 +492,56 @@ $(document).ready(function () {
             alert("boo");
         });
     });
+
+    $("#whoWhatUpdate").on("click",function (e) {
+
+        saveComment("imageId", "WhoWhat");
+
+    });
+
+    $("#whenUpdate").on("click", function (e) {
+
+        saveComment("imageId", "When");
+
+    });
+
+    $("#whereUpdate").on("click", function (e) {
+
+        saveComment("imageId", "Where");
+
+    });
+
+    $("#whyHowUpdate").on("click", function (e) {
+
+        saveComment("imageId", "WhyHow");
+
+    });
+
+    function saveComment(imageId, commentBox) {
+
+        var whoWhat = {};
+
+        //collect all our comment properties
+        whoWhat.Image = $("#" + imageId).val();
+        whoWhat.Comment = $("#" + commentBox).val();
+        whoWhat.Type = commentBox;
+        var thedata = JSON.stringify(whoWhat);
+
+        // Now execute your AJAX
+        $.ajax({
+            type: "POST",
+            url: "/home/updatecomment",
+            data: thedata,
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8'
+        }).done(function (response) {
+            // handle a successful response
+            Toast.create("Success", "Saved " + commentBox + "!", TOAST_STATUS.SUCCESS, 2500);
+        }).fail(function (xhr, status, message) {
+            // handle a failure response
+            alert("boo");
+        });
+    }
 });
 
 

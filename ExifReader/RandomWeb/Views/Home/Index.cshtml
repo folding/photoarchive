@@ -1,23 +1,22 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-@model PhotoArchive.Domain.ImageMetaData;
+@model RandomWeb.Models.ImageModel;
 
 @section Styles {
     <link rel="stylesheet" href="~/css/home-index.css" />
 }
 
-<input id="ogImageWidth" value="@Model.Width" style="display:none;" />
-<input id="ogImageHeight" value="@Model.Height" style="display:none;" />
-<input id="rotVal" value="@Model.Rotate" style="display:none;" />
-<input id="leftVal" value="@Model.LeftCrop" style="display:none;" />
-<input id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
-<input id="topVal" value="@Model.TopCrop" style="display:none;" />
-<input id="rot2Val" value="@Model.Rotate2" style="display:none;" />
-<input id="rightVal" value="@Model.RightCrop" style="display:none;" />
-<input id="imageId" type="text" value="@Model.Image" style="display:none;" />
+<input type="text" id="ogImageWidth" value="@Model.Width" style="display:none;" />
+<input type="text" id="ogImageHeight" value="@Model.Height" style="display:none;" />
+<input type="text" id="rotVal" value="@Model.Rotate" style="display:none;" />
+<input type="text" id="leftVal" value="@Model.LeftCrop" style="display:none;" />
+<input type="text" id="bottomVal" value="@Model.BottomCrop" style="display:none;" />
+<input type="text" id="topVal" value="@Model.TopCrop" style="display:none;" />
+<input type="text" id="rot2Val" value="@Model.Rotate2" style="display:none;" />
+<input type="text" id="rightVal" value="@Model.RightCrop" style="display:none;" />
+<input type="text" id="imageId" value="@Model.Image" style="display:none;" />
 
-<form id="imgform">
     <div class="row">
         <div class="col-lg-7 col-sm-12">
             <div class="row">
@@ -26,10 +25,9 @@
                     <span class="btn" onclick="setRotation(90)" title="90">90</span>
                     <span class="btn" onclick="setRotation(180)" title="180">180</span>
                     <span class="btn" onclick="setRotation(270)" title="270">270</span>
-                    <button type="submit">Save</button>
+                    <button id="btnSaveCrop" type="submit">Save</button>
                     <a href="/home/image/@Model.Image" id="fullsizelink" target="_blank">full size</a>
                     <a href="/home/image/@Model.Image" id="originallink" target="_blank">original</a>
-                    <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
                 </div>
                 <div class="col-12">
                     <label class="col-form-label" for="rotationSlider">Angle Correction</label>
@@ -60,27 +58,76 @@
                     <input id="leftSlider" data-slider-id='leftSlider' type="text" />
                 </div>
             </div>
+
+            <img id="thethumb" src="/home/image/@Model.Image" />
         </div>
         <div class="col-lg-5 col-sm-12">
-            <img id="thethumb" src="/home/image/@Model.Image" />
-            <div id="coords"></div>
-            <ul>
-                <li>@Model.Path</li>
-                <li>FileCreationDateTime:@Model.FileDateTime;</li>
-                <li>ExifDateTime:@Model.ExifDateTime;</li>
-                <li>Width:@Model.Width;</li>
-                <li>Height:@Model.Height;</li>
-                <li>ISOSpeedRatings:@Model.ISOSpeedRatings;</li>
-                <li>PixelXDimension:@Model.PixelXDimension;</li>
-                <li>PixelYDimension:@Model.PixelYDimension;</li>
-                <li>GPSAltitude:@Model.GPSAltitude;</li>
-                <li>GPSLatitude:@Model.GPSLatitude;</li>
-                <li>GPSLongitude:@Model.GPSLongitude;</li>
-            </ul>
+            <div class="row">
+                <div class="col-4">
+                    <img id="prevthumb" src="/home/imagethumb/@Model.ImagePrev" />
+                    <a href="@Url.Content("~/home/index/")@Model.ImagePrev" id="link" target="_blank">link</a>
+                </div>
+                <div class="col-4">
+                    <img id="thisthumb" src="/home/imagethumb/@Model.Image" />
+                    <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
+                </div>
+                <div class="col-4">
+                    <img id="nextthumb" src="/home/imagethumb/@Model.ImageNext" />
+                    <a href="@Url.Content("~/home/index/")@Model.ImageNext" id="link" target="_blank">link</a>
+                </div>
+            </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Who/What</label>
+                        <button id="whoWhatUpdate">Update</button>
+                    </div>
+                    <div class="col-9">
+                        <textarea cols="50" rows="3" id="WhoWhat">@Model.WhoWhat</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>When</label>
+                        <button id="whenUpdate">Update</button>
+                    </div>
+                    <div class="col-9">
+                        <textarea cols="50" rows="3" id="When">@Model.When</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Where</label>
+                        <button id="whereUpdate">Update</button>
+                    </div>
+                    <div class="col-9">
+                        <textarea cols="50" rows="3" id="Where">@Model.Where</textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Comments</label>
+                        <button id="whyHowUpdate">Update</button>
+                    </div>
+                    <div class="col-9">
+                        <textarea cols="50" rows="3" id="WhyHow">@Model.WhyHow</textarea>
+                    </div>
+                </div>
+                <ul>
+                    <li>@Model.Path</li>
+                    <li>FileCreationDateTime:@Model.FileDateTime;</li>
+                    <li>ExifDateTime:@Model.ExifDateTime;</li>
+                    <li>Width:@Model.Width;</li>
+                    <li>Height:@Model.Height;</li>
+                    <li>ISOSpeedRatings:@Model.ISOSpeedRatings;</li>
+                    <li>PixelXDimension:@Model.PixelXDimension;</li>
+                    <li>PixelYDimension:@Model.PixelYDimension;</li>
+                    <li>GPSAltitude:@Model.GPSAltitude;</li>
+                    <li>GPSLatitude:@Model.GPSLatitude;</li>
+                    <li>GPSLongitude:@Model.GPSLongitude;</li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-</form>
 @section Scripts {
     <script src="~/js/home-index.js" asp-append-version="true"></script>
 }
