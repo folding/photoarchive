@@ -49,12 +49,6 @@ function setRotation(rot) {
         rot = 0;
     }
 
-    var currentrot = $("#rotVal").val();
-
-    if (currentrot == rot) {
-        return;
-    }
-
     $("#rotVal").val(rot);
 
     var ogWidth = $("#ogImageWidth").val();
