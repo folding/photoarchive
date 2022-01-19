@@ -347,7 +347,7 @@ $(document).ready(function () {
                 sDown = false;
                 break;
             case 68://d
-                sDown = false;
+                dDown = false;
                 break;
             case 74://j
 
@@ -396,17 +396,17 @@ $(document).ready(function () {
                     rightSlider.bootstrapSlider("setValue", right + 1, true, true);//https://stackoverflow.com/a/47411403
                     setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
                 }
-                else if (dDown) {
-                    //move right slider right
-                    var right = rightSlider.bootstrapSlider("getValue");
-                    rightSlider.bootstrapSlider("setValue", right + 10, true, true);//https://stackoverflow.com/a/47411403
-                    setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
-                }
                 else if (aDown) {
                     //move left slider right
                     var left = leftSlider.bootstrapSlider("getValue");
                     leftSlider.bootstrapSlider("setValue", left + 10, true, true);//https://stackoverflow.com/a/47411403
                     setZoomXY(0, $("#theimage").height() / 2, 200, 0)
+                }
+                else if (dDown) {
+                    //move right slider right
+                    var right = rightSlider.bootstrapSlider("getValue");
+                    rightSlider.bootstrapSlider("setValue", right + 10, true, true);//https://stackoverflow.com/a/47411403
+                    setZoomXY($("#theimage").width(), $("#theimage").height() / 2, -200, 0)
                 }
                 else {
                     currentrot += 90;
