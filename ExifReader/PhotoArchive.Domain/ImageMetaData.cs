@@ -5,7 +5,7 @@ namespace PhotoArchive.Domain
 {
     public class ImageMetaData
     {
-        public static string CurrentVersion = "2";
+        public static string CurrentVersion = "4";
 
         //version 1 properties
         public string ISOSpeedRatings { get; set; }
@@ -15,7 +15,9 @@ namespace PhotoArchive.Domain
         public string GPSLatitude { get; set; }
         public string GPSLongitude { get; set; }
         public string ExifDateTime { get; set; }
+        public string ImagePrev { get; set; }//not saved
         public string Image { get; set; }
+        public string ImageNext { get; set; }//not saved
         public string Path { get; set; }
         public DateTime FileDateTime { get; set; }
         public long Width { get; set; }
@@ -32,5 +34,20 @@ namespace PhotoArchive.Domain
 
         //version 3 properties
         public double Rotate2 { get; set; }
+
+        //version 4 properties
+        public List<ImageComment> WhoWhat { get; set; }
+        public List<ImageComment> When { get; set; }
+        public List<ImageComment> Where { get; set; }
+        public List<ImageComment> WhyHow { get; set; }
+
+        public ImageMetaData()
+        {
+            WhoWhat = new List<ImageComment>();
+            When = new List<ImageComment>();
+            Where = new List<ImageComment>();
+            WhyHow = new List<ImageComment>();
+        }
     }
+
 }
