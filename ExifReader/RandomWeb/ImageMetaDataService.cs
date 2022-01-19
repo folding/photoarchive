@@ -54,75 +54,84 @@ namespace RandomWeb
 
         }
 
+        internal ImageMetaData GetRandomImageMetaData()
+        {
+
+            string imagePath = null;
+            int imageId = 0;
+            int folderId = 0;
+            Random random = new Random();
+            bool loaded = false;
+            //load a random picture
+            while (!loaded)
+            {
+                try
+                {
+
+                    Dictionary<string, Tuple<int, int>> allfiles = new Dictionary<string, Tuple<int, int>>();
+
+                    int foId = 0;
+                    foreach (var f in folders)
+                    {
+
+                        List<string> folderfiles = System.IO.Directory.GetFiles(f).ToList();
+
+                        int fiId = 0;
+                        foreach (var ff in folderfiles)
+                        {
+                            allfiles.Add(ff, new Tuple<int, int>(foId, fiId));
+                            fiId++;
+                        }
+                        foId++;
+                    }
+
+                    var rnd = random.Next(0, allfiles.Count);
+
+                    var ras = allfiles.ToArray()[rnd];
+
+                    folderId = ras.Value.Item1;
+                    imageId = ras.Value.Item2;
+
+                    imagePath = ras.Key;
+
+                    bool invalid = IsFileInvalid(imagePath);
+
+                    if (!invalid)
+                    {
+
+                        loaded = true;
+                    }
+                }
+                catch
+                { }
+            }
+
+            return GetImageMetaData(folderId + "-" + imageId);
+        }
         internal ImageMetaData GetImageMetaData(string id)
         {
-            Random random = new Random();
             ImageMetaData imageMetaData = new ImageMetaData();
             int imageId = 0;
             int folderId = 0;
-            var loaded = false;
             ImageFile exifData = null;
             string[] pictures = null;
             string imagePath = null;
 
-            if (!string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
             {
-
-                folderId = int.Parse(id.Split('-')[0]);
-                imageId = int.Parse(id.Split('-')[1]);
-
-                string folder = folders[folderId];
-                pictures = System.IO.Directory.GetFiles(folder);
-
-                imagePath = pictures[imageId]; //validate the path for security or use other means to generate the path.
-
+                throw new Exception();
             }
-            else
-            {
-                //load a random picture
-                while (!loaded)
-                {
-                    try
-                    {
 
-                        Dictionary<string, Tuple<int,int>> allfiles =   new Dictionary<string, Tuple<int,int>>();
+            folderId = int.Parse(id.Split('-')[0]);
+            imageId = int.Parse(id.Split('-')[1]);
 
-                        int foId = 0;
-                        foreach (var f in folders)
-                        {
-                            
-                            List<string> folderfiles = System.IO.Directory.GetFiles(f).ToList();
+            string folder = folders[folderId];
+            pictures = System.IO.Directory.GetFiles(folder);
 
-                            int fiId = 0;
-                            foreach (var ff in folderfiles)
-                            {
-                                allfiles.Add(ff, new Tuple<int, int>(foId,fiId));
-                                fiId++;
-                            }
-                            foId++;
-                        }
+            imagePath = pictures[imageId]; //validate the path for security or use other means to generate the path.
 
-                        var rnd = random.Next(0, allfiles.Count);
 
-                        var ras = allfiles.ToArray()[rnd];
 
-                        folderId = ras.Value.Item1;
-                        imageId = ras.Value.Item2;
-
-                        imagePath = ras.Key;
-
-                        bool invalid = IsFileInvalid(imagePath);
-
-                        if (!invalid)
-                        {
-
-                            loaded = true;
-                        }
-                    }
-                    catch
-                    { }
-                }
-            }
 
             //load json meta data
             var filename = System.IO.Path.GetFileName(imagePath);
@@ -168,9 +177,17 @@ namespace RandomWeb
                 }
 
                 //convert version 2 to 3
-                if(fileMetaData.Version == "2")
+                if (fileMetaData.Version == "2")
                 {
+                    //This version added Rotate2 which defaults to zero...
                     fileMetaData.Version = "3";
+                }
+
+                //convert 3 to 4
+                if (fileMetaData.Version == "3")
+                {
+                    //Adds WhoWhat, When, Where, WhyHow which default just fine too..
+                    fileMetaData.Version = "4";
                 }
 
                 imageMetaData = fileMetaData;
@@ -183,11 +200,29 @@ namespace RandomWeb
                 imageMetaData.PixelXDimension = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.PixelXDimension);
                 imageMetaData.PixelYDimension = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.PixelYDimension);
                 imageMetaData.GPSAltitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSAltitude) + "m " + GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSAltitudeRef);
-                imageMetaData.GPSLatitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLatitude) + " " + GetPropertyBruteForce(exifData,  ExifLibrary.ExifTag.GPSLatitudeRef);
+                imageMetaData.GPSLatitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLatitude) + " " + GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLatitudeRef);
                 imageMetaData.GPSLongitude = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLongitude) + " " + GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.GPSLongitudeRef);
                 imageMetaData.ExifDateTime = GetPropertyBruteForce(exifData, ExifLibrary.ExifTag.DateTime);
             }
+
+            //find the previous and next ids without going outside the size of the array
+            int previousImageId = imageId == 0 ? pictures.Count() : imageId - 1;
+            int nextImageId = imageId == pictures.Count() ? 0 : imageId + 1;
+
+            //make sure we get a vaild picture type
+            while(GetInvalidExtentions().Contains(System.IO.Path.GetExtension(pictures[previousImageId])))
+            {
+                previousImageId--;
+            }
+            while (GetInvalidExtentions().Contains(System.IO.Path.GetExtension(pictures[nextImageId])))
+            {
+                nextImageId++;
+            }
+
+
+            imageMetaData.ImagePrev = $"{folderId}-{imageId-1}";
             imageMetaData.Image = $"{folderId}-{imageId}";
+            imageMetaData.ImageNext = $"{folderId}-{imageId+1}";
 
             imageMetaData.Path = imagePath;
 
@@ -198,8 +233,6 @@ namespace RandomWeb
 
             imageMetaData.Width = info.ImageWidth;
             imageMetaData.Height = info.ImageHeight;
-
-
 
             //default crops if they don't exist
             if (imageMetaData.RightCrop == 0)
@@ -212,6 +245,37 @@ namespace RandomWeb
                 imageMetaData.BottomCrop = (int)imageMetaData.Height;
             }
 
+            //default location to Lat/Long if they exist
+            if(imageMetaData.Where.Count == 0 &&
+                !string.IsNullOrWhiteSpace(imageMetaData.GPSLatitude) &&
+                !string.IsNullOrWhiteSpace(imageMetaData.GPSLongitude))
+            {
+                imageMetaData.Where.Add(new ImageComment
+                {
+                    Comment = imageMetaData.GPSLatitude + Environment.NewLine + imageMetaData.GPSLongitude + Environment.NewLine + imageMetaData.GPSAltitude,
+                    CommentDateTime = DateTime.Now,
+                    Commenter = "from exif"
+                });
+
+                imageMetaData.Where.Add(new ImageComment
+                {
+                    Comment = GetDecimalDegreesFromDegreesMinutesSeconds(imageMetaData.GPSLatitude) + "," + GetDecimalDegreesFromDegreesMinutesSeconds(imageMetaData.GPSLongitude) + Environment.NewLine + imageMetaData.GPSAltitude,
+                    CommentDateTime = DateTime.Now,
+                    Commenter = "converted from exif"
+                });
+            }
+
+            //default time to Exif time if it exists
+            if(imageMetaData.When.Count == 0 && !string.IsNullOrWhiteSpace(imageMetaData.ExifDateTime))
+            {
+                imageMetaData.When.Add(new ImageComment
+                {
+                    Comment = imageMetaData.ExifDateTime,
+                    CommentDateTime = DateTime.Now,
+                    Commenter = "from exif"
+                });
+            }
+
 
             //create file if it doesn't exist
             // if(!metaDataCurrent)
@@ -220,6 +284,113 @@ namespace RandomWeb
             }
 
             return imageMetaData;
+        }
+
+        private string GetDecimalDegreesFromDegreesMinutesSeconds(string gPSLatitude)
+        {
+            if(string.IsNullOrWhiteSpace(gPSLatitude))
+            {
+                return "";
+            }
+
+            var parts = gPSLatitude.Split(' ');//61° 22' 2407 North;
+            double deg = double.Parse(parts[0].TrimEnd('°'));
+            double min = double.Parse(parts[1].TrimEnd('\''));
+            double sec = double.Parse(parts[2]);
+
+            double dmin = (min / 60.0);
+            double dsec = (sec / 3600.0);
+
+            string sign = parts[3].Contains("North") || parts[3].Contains("East") ? "" : "-";
+            string degrees = sign + (deg + dmin + dsec).ToString("0.00000000");
+
+            return degrees;
+        }
+
+        internal void UpdateComment(string image, string type, ImageComment comment)
+        {
+            var metadata = GetImageMetaData(image);
+
+            if (image != metadata.Image)
+            {
+                throw new Exception();
+            }
+
+            bool addedComment = false;
+            switch (type)
+            {
+                case "WhoWhat":
+                    if (NewCommentIsDifferent(metadata.WhoWhat, comment))
+                    {
+                        metadata.WhoWhat.Add(comment);
+                        addedComment = true;
+                    }
+                    break;
+                case "When":
+                    if (NewCommentIsDifferent(metadata.When, comment))
+                    {
+                        metadata.When.Add(comment);
+                        addedComment = true;
+                    }
+                    break;
+                case "Where":
+                    if (NewCommentIsDifferent(metadata.Where, comment))
+                    {
+                        metadata.Where.Add(comment);
+                        addedComment = true;
+                    }
+                    break;
+                case "WhyHow":
+                    if (NewCommentIsDifferent(metadata.WhyHow, comment))
+                    {
+                        metadata.WhyHow.Add(comment);
+                        addedComment = true;
+                    }
+                    break;
+                default:
+                    throw new Exception();
+            }
+
+            if (addedComment)
+            {
+                SaveImageMetaData(metadata);
+            }
+        }
+
+        private bool NewCommentIsDifferent(List<ImageComment> whoWhat, ImageComment comment)
+        {
+            if (whoWhat.Count > 0)
+            {
+                var lastComment = whoWhat.OrderByDescending(x => x.CommentDateTime).Select(x => x.Comment).FirstOrDefault();
+
+                return comment.Comment != lastComment;
+            }
+
+            return true;
+        }
+
+        private void SaveImageMetaData(ImageMetaData metadata)
+        {
+            int folderId = int.Parse(metadata.Image.Split('-')[0]);
+            int imageId = int.Parse(metadata.Image.Split('-')[1]);
+
+            string folder = folders[folderId];
+            var pictures = System.IO.Directory.GetFiles(folder);
+            var imagePath = pictures[imageId];
+
+            //make sure we are looking at the right file
+            if (imagePath != metadata.Path)
+            {
+                throw new Exception();
+            }
+
+            var filename = System.IO.Path.GetFileName(metadata.Path);
+            var jsonPath = System.IO.Path.Combine(folders[folderId], ".meta", filename + ".json");
+
+
+
+            System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(metadata, Formatting.Indented));
+
         }
 
         internal byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
@@ -373,7 +544,9 @@ namespace RandomWeb
 
         private List<string> GetInvalidExtentions()
         {
-            var exceptions = new List<string>() { ".json", ".aae", ".mov", ".pdf", ".bmp" };
+            var exceptions = new List<string>() { ".json",
+                ".aae", //https://discussions.apple.com/thread/7810994
+                ".mov", ".pdf", ".bmp" };
             //var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
             //_readWriteLock.EnterReadLock();
             //try
@@ -413,9 +586,9 @@ namespace RandomWeb
                     if (tag == ExifLibrary.ExifTag.GPSLatitude
                         || tag == ExifLibrary.ExifTag.GPSLongitude)
                     {
-                        return ((GPSLatitudeLongitude)property).Degrees.Numerator.ToString() + "° " +
-                            ((GPSLatitudeLongitude)property).Minutes.Numerator.ToString() + "' " +
-                            ((GPSLatitudeLongitude)property).Seconds.Numerator.ToString();
+                        return (((GPSLatitudeLongitude)property).Degrees.Numerator * 100.0 / (((GPSLatitudeLongitude)property).Degrees.Denominator) / 100.0).ToString() + "° " +
+                            (((GPSLatitudeLongitude)property).Minutes.Numerator * 100.0 / ((GPSLatitudeLongitude)property).Minutes.Denominator / 100.0).ToString() + "' " +
+                            (((GPSLatitudeLongitude)property).Seconds.Numerator * 100.0 / ((GPSLatitudeLongitude)property).Seconds.Denominator / 100.0).ToString();
                     }
 
                     if (tag == ExifLibrary.ExifTag.GPSAltitude)
