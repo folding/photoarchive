@@ -67,7 +67,7 @@ namespace RandomWeb.Controllers
                 if (q.Key == "rot")
                 {
                     int tmp = 0;
-                    if (int.TryParse(q.Value, out tmp))
+                    if (int.TryParse(q.Value.Last(), out tmp))//take last rot value (if there is more than one in the query string)
                     {
                         rotate = tmp;
                     }

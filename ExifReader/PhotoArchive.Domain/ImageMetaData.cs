@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace PhotoArchive.Domain
@@ -40,6 +41,13 @@ namespace PhotoArchive.Domain
         public List<ImageComment> When { get; set; }
         public List<ImageComment> Where { get; set; }
         public List<ImageComment> WhyHow { get; set; }
+        [JsonIgnore]
+        public string Transformation { 
+            get
+            {
+                return "crop=" + LeftCrop + "," + TopCrop + "," + RightCrop + "," + BottomCrop + "&rot=" + Rotate + "&rot2=" + Rotate2;
+            }
+        }
 
         public ImageMetaData()
         {

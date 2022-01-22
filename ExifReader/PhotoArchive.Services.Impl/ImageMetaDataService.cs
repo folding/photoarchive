@@ -282,6 +282,22 @@ namespace PhotoArchive.Services.Impl
             return imageMetaData;
         }
 
+        public ImageCoords GetImageCoords(string image)
+        {
+            ImageMetaData data = GetImageMetaData(image);
+
+            return new ImageCoords
+            {
+                BottomCrop = data.BottomCrop,
+                LeftCrop = data.LeftCrop,
+                RightCrop = data.RightCrop,
+                TopCrop = data.TopCrop,
+                Rotate = data.Rotate,
+                Rotate2 = data.Rotate2
+            };
+
+        }
+
         private string GetDecimalDegreesFromDegreesMinutesSeconds(string gPSLatitude)
         {
             if(string.IsNullOrWhiteSpace(gPSLatitude))

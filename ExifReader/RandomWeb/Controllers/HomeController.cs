@@ -84,6 +84,31 @@ namespace RandomWeb.Controllers
             return View(model);
         }
 
+        public IActionResult Rotate(string id)
+        {
+            //AIzaSyCEwQziJOjmBPsI9Z6E40snOVWf3OBpsCc - MAPS key
+            ImageMetaData imageMetaData;
+            if (string.IsNullOrEmpty(id))
+            {
+                imageMetaData = MetaDataService.GetRandomImageMetaData();
+            }
+            else
+            {
+                imageMetaData = MetaDataService.GetImageMetaData(id);
+            }
+
+            ImageRotateModel model = new ImageRotateModel
+            {
+
+                Image = imageMetaData.Image,
+                Path = imageMetaData.Path,
+                Rotate = imageMetaData.Rotate,
+                Transformation = imageMetaData.Transformation
+            };
+
+            return View(model);
+        }
+
         [HttpPost]
         public JsonResult UpdateImage([FromBody]ImageCropData data)
         {
@@ -98,6 +123,20 @@ namespace RandomWeb.Controllers
             };
 
             MetaDataService.UpdateCrop(data.Image, newCrop);
+
+            return new JsonResult("yay");
+        }
+
+        public JsonResult UpdateRotation([FromBody] ImageRotateData data)
+        {
+            //get current
+            ImageCoords tranformation = MetaDataService.GetImageCoords(data.Image);
+
+            //update rotation
+            tranformation.Rotate = data.Rotate;
+
+            //save
+            MetaDataService.UpdateCrop(data.Image, tranformation);
 
             return new JsonResult("yay");
         }
