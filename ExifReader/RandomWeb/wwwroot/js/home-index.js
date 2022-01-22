@@ -21,9 +21,9 @@ function changeImage() {
     var rightcrop = document.getElementById("rightVal").value;
     var topcrop = document.getElementById("topVal").value;
     var bottomcrop = document.getElementById("bottomVal").value;
-    var screensize = "";
+    var screensize = "medium";
     if ($(window).width() < 1280) {
-        screensize = "mobile";
+        screensize = "small";
     }
 
 
@@ -31,9 +31,9 @@ function changeImage() {
 
     var imgQuery = "?" + encodeURI("crop=" + leftcrop + "," + topcrop + "," + rightcrop + "," + bottomcrop + "&rot=" + rot + "&rot2=" + rot2);
 
-    img.src = window.location.origin + "/home/image" + screensize + "/" + imgId + imgQuery;
-    fullsize.href = window.location.origin + "/home/imagefull/" + imgId + imgQuery;
-    original.href = window.location.origin + "/home/imagefull/" + imgId;
+    img.src = window.location.origin + "/image/" + screensize + "/" + imgId + imgQuery;
+    fullsize.href = window.location.origin + "/image/full/" + imgId + imgQuery;
+    original.href = window.location.origin + "/image/full/" + imgId;
 }
 
 function setRotation(rot) {
@@ -423,7 +423,7 @@ $(document).ready(function () {
         var thumb = document.getElementById("prevthumb");
 
         if (img.src != thumb.src) {
-            img.src = thumb.src.replace("imagethumb", "image");
+            img.src = thumb.src.replace("thumb", "medium");
         }
     });
     $('#thisthumb').on("mousemove", function (e) {
@@ -431,7 +431,7 @@ $(document).ready(function () {
         var thumb = document.getElementById("thisthumb");
 
         if (img.src != thumb.src) {
-            img.src = thumb.src.replace("imagethumb", "image");
+            img.src = thumb.src.replace("thumb", "medium");
         }
     });
     $('#nextthumb').on("mousemove", function (e) {
@@ -439,7 +439,7 @@ $(document).ready(function () {
         var thumb = document.getElementById("nextthumb");
 
         if (img.src != thumb.src) {
-            img.src = thumb.src.replace("imagethumb","image");
+            img.src = thumb.src.replace("thumb","medium");
         }
     });
 
@@ -611,6 +611,6 @@ function setZoomXY(CX, CY, TX, TY) {
 
     var imgId = $("#imageId").val();
     var img = document.getElementById("thethumb");
-    img.src = window.location.origin + "/home/image/" + imgId + imgQuery;
+    img.src = window.location.origin + "/image/medium/" + imgId + imgQuery;
 }
 

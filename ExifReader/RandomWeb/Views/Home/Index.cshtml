@@ -26,8 +26,8 @@
                     <span class="btn" onclick="setRotation(180)" title="180">180</span>
                     <span class="btn" onclick="setRotation(270)" title="270">270</span>
                     <button id="btnSaveCrop" type="submit">Save</button>
-                    <a href="/home/image/@Model.Image" id="fullsizelink" target="_blank">full size</a>
-                    <a href="/home/image/@Model.Image" id="originallink" target="_blank">original</a>
+                    <a href="/image/full/@Model.Image" id="fullsizelink" target="_blank">full size</a>
+                    <a href="/image/full/@Model.Image" id="originallink" target="_blank">original</a>
                 </div>
                 <div class="col-12">
                     <label class="col-form-label" for="rotationSlider">Angle Correction</label>
@@ -45,7 +45,7 @@
 
                         </div>
                         <div class="col-8">
-                            <img id="theimage" src="home/image/@Model.Image" />
+                            <img id="theimage" src="/image/medium/@Model.Image" />
                         </div>
                         <div class="col-2">
                             <label class="col-form-label" for="bottomSlider">Crop Bottom</label>
@@ -59,20 +59,20 @@
                 </div>
             </div>
 
-            <img id="thethumb" src="/home/image/@Model.Image" />
+            <img id="thethumb" src="/image/medium/@Model.Image" />
         </div>
         <div class="col-lg-5 col-sm-12">
             <div class="row">
                 <div class="col-4">
-                    <img id="prevthumb" src="/home/imagethumb/@Model.ImagePrev" />
+                    <img id="prevthumb" src="/image/thumb/@Model.ImagePrev" />
                     <a href="@Url.Content("~/home/index/")@Model.ImagePrev" id="link" target="_blank">link</a>
                 </div>
                 <div class="col-4">
-                    <img id="thisthumb" src="/home/imagethumb/@Model.Image" />
+                    <img id="thisthumb" src="/image/thumb/@Model.Image" />
                     <a href="@Url.Content("~/home/index/")@Model.Image" id="link" target="_blank">link</a>
                 </div>
                 <div class="col-4">
-                    <img id="nextthumb" src="/home/imagethumb/@Model.ImageNext" />
+                    <img id="nextthumb" src="/image/thumb/@Model.ImageNext" />
                     <a href="@Url.Content("~/home/index/")@Model.ImageNext" id="link" target="_blank">link</a>
                 </div>
             </div>
