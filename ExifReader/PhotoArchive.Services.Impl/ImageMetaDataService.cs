@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RandomWeb
+namespace PhotoArchive.Services.Impl
 {
     public class ImageMetaDataService
     {
@@ -20,7 +20,7 @@ namespace RandomWeb
             this.folders = folders;
         }
 
-        internal void UpdateCrop(string image, ImageCoords newCrop)
+        public void UpdateCrop(string image, ImageCoords newCrop)
         {
 
 
@@ -54,10 +54,8 @@ namespace RandomWeb
 
         }
 
-        internal ImageMetaData GetRandomImageMetaData()
+        public ImageMetaData GetRandomImageMetaData()
         {
-
-            string imagePath = null;
             int imageId = 0;
             int folderId = 0;
             Random random = new Random();
@@ -92,7 +90,7 @@ namespace RandomWeb
                     folderId = ras.Value.Item1;
                     imageId = ras.Value.Item2;
 
-                    imagePath = ras.Key;
+                    string imagePath = ras.Key;
 
                     bool invalid = IsFileInvalid(imagePath);
 
@@ -108,15 +106,13 @@ namespace RandomWeb
 
             return GetImageMetaData(folderId + "-" + imageId);
         }
-        internal ImageMetaData GetImageMetaData(string id)
+        public ImageMetaData GetImageMetaData(string id)
         {
             ImageMetaData imageMetaData = new ImageMetaData();
             int imageId = 0;
             int folderId = 0;
             ImageFile exifData = null;
             string[] pictures = null;
-            string imagePath = null;
-
             if (string.IsNullOrEmpty(id))
             {
                 throw new Exception();
@@ -128,7 +124,7 @@ namespace RandomWeb
             string folder = folders[folderId];
             pictures = System.IO.Directory.GetFiles(folder);
 
-            imagePath = pictures[imageId]; //validate the path for security or use other means to generate the path.
+            string imagePath = pictures[imageId];
 
 
 
@@ -278,7 +274,7 @@ namespace RandomWeb
 
 
             //create file if it doesn't exist
-            // if(!metaDataCurrent)
+            if(!System.IO.File.Exists(jsonPath) || !metaDataCurrent)
             {
                 System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(imageMetaData, Formatting.Indented));
             }
@@ -307,7 +303,7 @@ namespace RandomWeb
             return degrees;
         }
 
-        internal void UpdateComment(string image, string type, ImageComment comment)
+        public void UpdateComment(string image, string type, ImageComment comment)
         {
             var metadata = GetImageMetaData(image);
 
@@ -393,7 +389,7 @@ namespace RandomWeb
 
         }
 
-        internal byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
+        public byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
         {
             int folderId = int.Parse(id.Split('-')[0]);
             int imageId = int.Parse(id.Split('-')[1]);
@@ -402,6 +398,13 @@ namespace RandomWeb
             var pictures = System.IO.Directory.GetFiles(folder);
 
             var path = pictures[imageId]; //validate the path for security or use other means to generate the path.
+
+            var ext = System.IO.Path.GetExtension(path);
+
+            if(GetInvalidExtentions().Contains(ext.ToLower()))
+            {
+                return null;
+            }
 
             byte[] imageBytes = System.IO.File.ReadAllBytes(path);
 

@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using ExifLibrary;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using RandomWeb.Models;
-using Imageflow.Fluent;
-using Microsoft.AspNetCore.Hosting;
-using System.Threading;
 using PhotoArchive.Domain;
-using ImageMagick;
+using PhotoArchive.Services.Impl;
+using RandomWeb.Models;
+using System;
+using System.Diagnostics;
+using System.Linq;
 
 namespace RandomWeb.Controllers
 {
@@ -158,6 +149,10 @@ namespace RandomWeb.Controllers
 
             byte[] imageBytes = MetaDataService.GetTransformedImage(id,maxWidth,maxHeight,rotate,rotate2,leftCrop,topCrop,rightCrop,bottomCrop);
 
+            if(imageBytes == null)
+            {
+                return null;
+            }
 
             return base.File(imageBytes, "image/jpeg");
         }

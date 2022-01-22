@@ -28,7 +28,7 @@ namespace ConsoleApp1
 
                 Console.WriteLine(json);
 
-                var x = ExifTag.ISOSpeedRatings;
+                //var x = ExifTag.ISOSpeedRatings;
                 //var x = ExifTag.PixelXDimension;
                 //var x = ExifTag.PixelYDimension;
                 //var x = ExifTag.GPSAltitude;
