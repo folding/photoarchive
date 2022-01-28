@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExifReader", "ConsoleApp1\ExifReader.csproj", "{8A5388D1-27A4-433D-94A7-353B0217EB4B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RandomWeb", "RandomWeb\RandomWeb.csproj", "{B3272C96-4ED2-4326-A619-538398BD7A40}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoArchive.Domain", "PhotoArchive.Domain\PhotoArchive.Domain.csproj", "{E45B9CCF-EAE5-4281-89B5-1BA44473FC2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoArchive.Services.Impl", "PhotoArchive.Services.Impl\PhotoArchive.Services.Impl.csproj", "{6BB50E3D-9E6C-4E2A-A535-69EACEC0B75E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoArchive.QueueManager", "PhotoArchive.QueueManager\PhotoArchive.QueueManager.csproj", "{7FA10842-599F-45EC-8828-9805DA033FAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8A5388D1-27A4-433D-94A7-353B0217EB4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8A5388D1-27A4-433D-94A7-353B0217EB4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8A5388D1-27A4-433D-94A7-353B0217EB4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8A5388D1-27A4-433D-94A7-353B0217EB4B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3272C96-4ED2-4326-A619-538398BD7A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{6BB50E3D-9E6C-4E2A-A535-69EACEC0B75E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BB50E3D-9E6C-4E2A-A535-69EACEC0B75E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BB50E3D-9E6C-4E2A-A535-69EACEC0B75E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA10842-599F-45EC-8828-9805DA033FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA10842-599F-45EC-8828-9805DA033FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA10842-599F-45EC-8828-9805DA033FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA10842-599F-45EC-8828-9805DA033FAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

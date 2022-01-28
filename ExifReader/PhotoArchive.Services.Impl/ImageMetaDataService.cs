@@ -14,10 +14,12 @@ namespace PhotoArchive.Services.Impl
     public class ImageMetaDataService
     {
         private string[] folders;
+        private string queueFolder;
 
-        public ImageMetaDataService(string[] folders)
+        public ImageMetaDataService(string[] folders, string queueFolder)
         {
             this.folders = folders;
+            this.queueFolder = queueFolder;
         }
 
         public void UpdateCrop(string image, ImageCoords newCrop)
@@ -106,12 +108,66 @@ namespace PhotoArchive.Services.Impl
 
             return GetImageMetaData(folderId + "-" + imageId);
         }
+
+        public string[] QueueContents(string queue)
+        {
+            string queuePath = System.IO.Path.Combine(queueFolder, queue + ".txt");
+
+            if (!System.IO.File.Exists(queuePath))
+            {
+                return new string[0];
+            }
+
+            return System.IO.File.ReadAllLines(queuePath);
+        }
+
+        public void Queue(string queue, string file)
+        {
+            string queuePath = System.IO.Path.Combine(queueFolder, queue + ".txt");
+
+            System.IO.File.AppendAllLines(queuePath, new string[] { file });
+        }
+
+        public string Dequeue(string queue)
+        {
+            string queuePath = System.IO.Path.Combine(queueFolder, queue + ".txt");
+
+
+            if (!System.IO.File.Exists(queuePath))
+            {
+                return null;
+            }
+
+            var lines = System.IO.File.ReadAllLines(queuePath);
+
+            string dequeued = lines.FirstOrDefault();
+
+            lines = lines.Skip(1).ToArray();
+
+            System.IO.File.WriteAllLines(queuePath, lines);
+
+            return dequeued;
+        }
+        public string QueuePeek(string queue)
+        {
+            string queuePath = System.IO.Path.Combine(queueFolder, queue + ".txt");
+
+
+            if (!System.IO.File.Exists(queuePath))
+            {
+                return null;
+            }
+
+            var lines = System.IO.File.ReadAllLines(queuePath);
+
+            return lines.FirstOrDefault();
+
+        }
+
         public ImageMetaData GetImageMetaData(string id)
         {
-            ImageMetaData imageMetaData = new ImageMetaData();
             int imageId = 0;
             int folderId = 0;
-            ImageFile exifData = null;
             string[] pictures = null;
             if (string.IsNullOrEmpty(id))
             {
@@ -126,12 +182,40 @@ namespace PhotoArchive.Services.Impl
 
             string imagePath = pictures[imageId];
 
+            return GetImageMetaDataByPath(imagePath);
+        }
+        public ImageMetaData GetImageMetaDataByPath(string imagePath)
+        {
+            ImageMetaData imageMetaData = new ImageMetaData();
+            ImageFile exifData = null;
 
+            var filename = System.IO.Path.GetFileName(imagePath);
+            var directory = System.IO.Path.GetDirectoryName(imagePath);
+            string[] pictures = System.IO.Directory.GetFiles(directory);
+
+            //find  folder and file id
+            int folderId = 0;
+            int imageId = 0;
+
+            for (; folderId < folders.Count(); folderId++)
+            {
+                if (folders[folderId] == directory)
+                {
+                    break;
+                }
+            }
+
+            for (; imageId < pictures.Count(); imageId++)
+            {
+                if (pictures[imageId] == imagePath)
+                {
+                    break;
+                }
+            }
 
 
             //load json meta data
-            var filename = System.IO.Path.GetFileName(imagePath);
-            var jsonPath = System.IO.Path.Combine(folders[folderId], ".meta", filename + ".json");
+            var jsonPath = System.IO.Path.Combine(directory, ".meta", filename + ".json");
 
             try
             {
@@ -148,6 +232,26 @@ namespace PhotoArchive.Services.Impl
                 var metaData = System.IO.File.ReadAllText(jsonPath);
 
                 ImageMetaData fileMetaData = Newtonsoft.Json.JsonConvert.DeserializeObject<ImageMetaData>(metaData);
+
+                if (fileMetaData.WhoWhat == null)
+                {
+                    fileMetaData.WhoWhat = new List<ImageComment>();
+                }
+
+                if (fileMetaData.When == null)
+                {
+                    fileMetaData.When = new List<ImageComment>();
+                }
+
+                if (fileMetaData.Where == null)
+                {
+                    fileMetaData.Where = new List<ImageComment>();
+                }
+
+                if (fileMetaData.WhyHow == null)
+                {
+                    fileMetaData.WhyHow = new List<ImageComment>();
+                }
 
                 if (fileMetaData.Version != ImageMetaData.CurrentVersion)
                 {
@@ -202,23 +306,35 @@ namespace PhotoArchive.Services.Impl
             }
 
             //find the previous and next ids without going outside the size of the array
-            int previousImageId = imageId == 0 ? pictures.Count() : imageId - 1;
-            int nextImageId = imageId == pictures.Count() ? 0 : imageId + 1;
+            int previousImageId = imageId <= 0 ? pictures.Count() - 1 : imageId - 1;
+            int nextImageId = imageId + 1 >= pictures.Count() ? 0 : imageId + 1;
+
+
 
             //make sure we get a vaild picture type
-            while(GetInvalidExtentions().Contains(System.IO.Path.GetExtension(pictures[previousImageId])))
+            while (IsFileInvalid(pictures[previousImageId]))
             {
                 previousImageId--;
+                if (previousImageId < 0)
+                {
+                    previousImageId = pictures.Count() - 1;
+                }
             }
-            while (GetInvalidExtentions().Contains(System.IO.Path.GetExtension(pictures[nextImageId])))
+            while (IsFileInvalid(pictures[nextImageId]))
             {
                 nextImageId++;
+
+                if (nextImageId >= pictures.Count())
+                {
+                    nextImageId = 0;
+                    break;
+                }
             }
 
 
-            imageMetaData.ImagePrev = $"{folderId}-{imageId-1}";
+            imageMetaData.ImagePrev = $"{folderId}-{imageId - 1}";
             imageMetaData.Image = $"{folderId}-{imageId}";
-            imageMetaData.ImageNext = $"{folderId}-{imageId+1}";
+            imageMetaData.ImageNext = $"{folderId}-{imageId + 1}";
 
             imageMetaData.Path = imagePath;
 
@@ -242,7 +358,7 @@ namespace PhotoArchive.Services.Impl
             }
 
             //default location to Lat/Long if they exist
-            if(imageMetaData.Where.Count == 0 &&
+            if (imageMetaData.Where.Count == 0 &&
                 !string.IsNullOrWhiteSpace(imageMetaData.GPSLatitude) &&
                 !string.IsNullOrWhiteSpace(imageMetaData.GPSLongitude))
             {
@@ -262,7 +378,7 @@ namespace PhotoArchive.Services.Impl
             }
 
             //default time to Exif time if it exists
-            if(imageMetaData.When.Count == 0 && !string.IsNullOrWhiteSpace(imageMetaData.ExifDateTime))
+            if (imageMetaData.When.Count == 0 && !string.IsNullOrWhiteSpace(imageMetaData.ExifDateTime))
             {
                 imageMetaData.When.Add(new ImageComment
                 {
@@ -274,7 +390,7 @@ namespace PhotoArchive.Services.Impl
 
 
             //create file if it doesn't exist
-            if(!System.IO.File.Exists(jsonPath) || !metaDataCurrent)
+            if (!System.IO.File.Exists(jsonPath) || !metaDataCurrent)
             {
                 System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(imageMetaData, Formatting.Indented));
             }
@@ -300,7 +416,7 @@ namespace PhotoArchive.Services.Impl
 
         private string GetDecimalDegreesFromDegreesMinutesSeconds(string gPSLatitude)
         {
-            if(string.IsNullOrWhiteSpace(gPSLatitude))
+            if (string.IsNullOrWhiteSpace(gPSLatitude))
             {
                 return "";
             }
@@ -405,7 +521,7 @@ namespace PhotoArchive.Services.Impl
 
         }
 
-        public byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1)
+        public byte[] GetTransformedImage(string id, int maxWidth, int maxHeight, int rotate1 = 0, double rotate2 = 0.0, int leftCrop = -1, int topCrop = -1, int rightCrop = -1, int bottomCrop = -1, int quality = 100)
         {
             int folderId = int.Parse(id.Split('-')[0]);
             int imageId = int.Parse(id.Split('-')[1]);
@@ -417,7 +533,7 @@ namespace PhotoArchive.Services.Impl
 
             var ext = System.IO.Path.GetExtension(path);
 
-            if(GetInvalidExtentions().Contains(ext.ToLower()))
+            if (GetInvalidExtentions().Contains(ext.ToLower()))
             {
                 return null;
             }
@@ -481,7 +597,7 @@ namespace PhotoArchive.Services.Impl
                         }
 
                         var r = buildNode
-                        .EncodeToBytes(new MozJpegEncoder(100, true))
+                        .EncodeToBytes(new MozJpegEncoder(quality, true))
                         .Finish().InProcessAsync().Result;
 
                         imageBytes = r.TryGet(1).TryGetBytes().Value.ToArray();
@@ -546,7 +662,7 @@ namespace PhotoArchive.Services.Impl
             return imageBytes;
         }
 
-        private bool IsFileInvalid(string imagePath)
+        public bool IsFileInvalid(string imagePath)
         {
             var imgEx = System.IO.Path.GetExtension(imagePath);
 
@@ -565,7 +681,7 @@ namespace PhotoArchive.Services.Impl
         {
             var exceptions = new List<string>() { ".json",
                 ".aae", //https://discussions.apple.com/thread/7810994
-                ".mov", ".pdf", ".bmp" };
+                ".mov", ".pdf", ".bmp",".m4a",".avi",".txt",".lnk",".zip" };
             //var expath = @"C:\Users\foldi\Dropbox\1-FilesToSort\exceptions.txt";
             //_readWriteLock.EnterReadLock();
             //try
@@ -621,7 +737,5 @@ namespace PhotoArchive.Services.Impl
 
             return "";
         }
-
-
     }
 }

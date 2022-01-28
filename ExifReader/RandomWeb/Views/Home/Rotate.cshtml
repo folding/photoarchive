@@ -10,25 +10,25 @@
 <input type="text" id="rotVal" value="@Model.Rotate" style="display:none; width:400px" />
 <input type="text" id="imgTransformation" value="@Model.Transformation" style="display:none; width:400px" />
 <input type="text" id="imageId" value="@Model.Image" style="display:none;" />
-<a href="/home/rotate/@Model.Image" id="originallink" target="_blank">link</a>
 
-<div class="row">
-    <div class="col-lg-7 col-sm-12">
+<div class="container">
         <div class="row">
             <div class="col-12">
-                <span class="btn" onclick="setRotation(0)" title="0">0</span>
-                <span class="btn" onclick="setRotation(90)" title="90">90</span>
-                <span class="btn" onclick="setRotation(180)" title="180">180</span>
-                <span class="btn" onclick="setRotation(270)" title="270">270</span>
-                <button id="btnSaveCrop" type="submit">Save</button>
-            </div>
-
-            <div class="col-12">
-                <img id="theimage" src="/image/medium/@Model.Image" />
-
+                <img id="theimage" src="/image/small/@Model.Image" class="img-fluid" />
             </div>
         </div>
-
+        <div class="row">
+            <div class="col-12">
+                <hr/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <button class="btn btn-lg btn-light" onclick="setRotation(parseInt(document.getElementById('rotVal').value)-90)" title="0">Rotate</button>
+                <a href="/home/rotate/@Model.Image" id="originallink" target="_blank">link</a>
+                <button class="btn btn-lg btn-light" onclick="confirmRotation()">Save Rotation</button>
+            </div>
+        </div>
     </div>
 
     @section Scripts {

@@ -3,10 +3,6 @@
 
 // Write your JavaScript code.
 var imgData = {};
-var leftSlider = {};
-var rightSlider = {};
-var topSlider = {};
-var bottomSlider = {};
 
 
 function changeImage() {
@@ -17,7 +13,7 @@ function changeImage() {
     var imgTransformation = document.getElementById("imgTransformation").value;
     var screensize = "medium";
     if ($(window).width() < 1280) {
-        screensize = "small";
+        screensize = "large";
     }
 
 
@@ -41,9 +37,58 @@ function setRotation(rot) {
         rot = 0;
     }
 
-    $("#rotVal").val(rot);
+    var currentrot = parseInt(document.getElementById("rotVal").value);
+    if (currentrot != rot) {
+        $("#rotVal").val(rot);
 
+        saveRotation();
+    }
     changeImage();
+}
+
+function saveRotation() {
+
+    //collect all our image properties
+    imgData.Image = $("#imageId").val();
+    imgData.Rotate = parseInt($("#rotVal").val());
+    thedata = JSON.stringify(imgData);
+    // Now execute your AJAX
+    $.ajax({
+        type: "POST",
+        url: "/home/updaterotation",
+        data: thedata,
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8'
+    }).done(function (response) {
+        // handle a successful response
+        Toast.create("Success", "Rotation Saved!", TOAST_STATUS.SUCCESS, 2500);
+    }).fail(function (xhr, status, message) {
+        // handle a failure response
+        alert("boo");
+    });
+}
+
+function confirmRotation() {
+
+    //collect all our image properties
+    imgData.Image = $("#imageId").val();
+    imgData.Rotate = parseInt($("#rotVal").val());
+    thedata = JSON.stringify(imgData);
+    // Now execute your AJAX
+    $.ajax({
+        type: "POST",
+        url: "/home/confirmrotation",
+        data: thedata,
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8'
+    }).done(function (response) {
+        // handle a successful response
+        Toast.create("Success", "Rotation Saved!", TOAST_STATUS.SUCCESS, 2500);
+        window.location = window.location;
+    }).fail(function (xhr, status, message) {
+        // handle a failure response
+        alert("boo");
+    });
 }
 
 $(document).ready(function () {
@@ -69,8 +114,8 @@ $(document).ready(function () {
             case 70://f - refresh
                 window.location = window.location;
                 break;
-            case 83://s - save
-                $("#btnSaveCrop").trigger("click");
+            case 83://s - save rotation
+                confirmRotation();
                 break;
         }
 
@@ -78,28 +123,6 @@ $(document).ready(function () {
     });
 
 
-    $("#btnSaveCrop").on("click", function (e) {
-        // here's where you stop the default submit action of the form
-        e.preventDefault();
-
-        //collect all our image properties
-        imgData.Image = $("#imageId").val();
-        imgData.Rotate = parseInt($("#rotVal").val());
-        thedata = JSON.stringify(imgData);
-        // Now execute your AJAX
-        $.ajax({
-            type: "POST",
-            url: "/home/updaterotation",
-            data: thedata,
-            dataType: 'json',
-            contentType: 'application/json; charset=utf-8'
-        }).done(function (response) {
-            // handle a successful response
-            Toast.create("Success", "Rotation Saved!", TOAST_STATUS.SUCCESS, 2500);
-        }).fail(function (xhr, status, message) {
-            // handle a failure response
-            alert("boo");
-        });
-    });
+     
 
 });

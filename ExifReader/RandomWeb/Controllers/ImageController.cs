@@ -9,25 +9,13 @@ using System.Linq;
 
 namespace RandomWeb.Controllers
 {
-    public class ImageController : Controller
+    public class ImageController : BaseController
     {
         private readonly ILogger<ImageController> _logger;
-        private ImageMetaDataService MetaDataService { get; set; }
-
-        private string[] folders = { @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\101APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\102APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\103APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\1960s",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\gigi and rayray's wedding",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\UTO 4th of July",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort",
-            @"C:\Users\foldi\Dropbox\Family History\Family Photo Archives\To Sort\Rastall"};
 
         public ImageController(ILogger<ImageController> logger)
         {
             _logger = logger;
-            MetaDataService = new ImageMetaDataService(folders);
         }
 
         public FileResult Thumb(string id)
@@ -45,12 +33,21 @@ namespace RandomWeb.Controllers
             return GetImage(id, 400, 400);
         }
 
-        public FileResult Full(string id)
+        public FileResult Large(string id)
         {
-            return GetImage(id, 0, 0);
+            return GetImage(id, 600, 600);
         }
 
-        private FileResult GetImage(string id, int maxWidth, int maxHeight)
+        public FileResult Full(string id)
+        {
+            return GetImage(id);
+        }
+        public FileResult Full60(string id)
+        {
+            return GetImage(id,800,800,60);
+        }
+
+        private FileResult GetImage(string id, int maxWidth = 0, int maxHeight = 0, int quality=100)
         { 
             if(string.IsNullOrEmpty(id))
             {
@@ -94,7 +91,7 @@ namespace RandomWeb.Controllers
                 }
             }
 
-            byte[] imageBytes = MetaDataService.GetTransformedImage(id,maxWidth,maxHeight,rotate,rotate2,leftCrop,topCrop,rightCrop,bottomCrop);
+            byte[] imageBytes = MetaDataService.GetTransformedImage(id,maxWidth,maxHeight,rotate,rotate2,leftCrop,topCrop,rightCrop,bottomCrop,quality);
 
             if(imageBytes == null)
             {

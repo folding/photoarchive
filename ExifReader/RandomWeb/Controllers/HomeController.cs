@@ -9,25 +9,13 @@ using System.Linq;
 
 namespace RandomWeb.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
-        private ImageMetaDataService MetaDataService { get; set; }
-
-        private string[] folders = { @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\101APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\102APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\103APPLE",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\1960s",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\gigi and rayray's wedding",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos\UTO 4th of July",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort\photos",
-            @"C:\Users\foldi\Dropbox\1-FilesToSort",
-            @"C:\Users\foldi\Dropbox\Family History\Family Photo Archives\To Sort\Rastall"};
 
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            MetaDataService = new ImageMetaDataService(folders);
         }
 
         public IActionResult Index(string id)
@@ -90,7 +78,16 @@ namespace RandomWeb.Controllers
             ImageMetaData imageMetaData;
             if (string.IsNullOrEmpty(id))
             {
-                imageMetaData = MetaDataService.GetRandomImageMetaData();
+                var path = MetaDataService.QueuePeek("needs-rotation");
+
+                if (!string.IsNullOrEmpty(path))
+                {
+                    imageMetaData = MetaDataService.GetImageMetaDataByPath(path);
+                }
+                else
+                {
+                    imageMetaData = MetaDataService.GetRandomImageMetaData();
+                }
             }
             else
             {
@@ -139,6 +136,27 @@ namespace RandomWeb.Controllers
             MetaDataService.UpdateCrop(data.Image, tranformation);
 
             return new JsonResult("yay");
+        }
+
+        public JsonResult ConfirmRotation([FromBody] ImageRotateData data)
+        {
+            var peek = MetaDataService.QueuePeek("needs-rotation");
+            var md = MetaDataService.GetImageMetaDataByPath(peek);
+
+            if (data.Image == md.Image)
+            {
+
+                //move queues
+                var item = MetaDataService.Dequeue("needs-rotation");
+
+                MetaDataService.Queue("has-rotation", item);
+
+                return new JsonResult("yay");
+            }
+            else
+            {
+                throw new Exception("wrong imageid");
+            }
         }
 
 
