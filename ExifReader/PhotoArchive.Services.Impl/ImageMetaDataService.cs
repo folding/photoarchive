@@ -6,6 +6,7 @@ using PhotoArchive.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -192,6 +193,7 @@ namespace PhotoArchive.Services.Impl
             var filename = System.IO.Path.GetFileName(imagePath);
             var directory = System.IO.Path.GetDirectoryName(imagePath);
             string[] pictures = System.IO.Directory.GetFiles(directory);
+            byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
 
             //find  folder and file id
             int folderId = 0;
@@ -290,6 +292,18 @@ namespace PhotoArchive.Services.Impl
                     fileMetaData.Version = "4";
                 }
 
+                //convert 3 to 4
+                if (fileMetaData.Version == "4")
+                {
+                    //Adds Hash..
+                    using (var md5 = MD5.Create())
+                    {
+                        var hashedBytes = md5.ComputeHash(imageBytes);
+                        fileMetaData.Hash = string.Concat(hashedBytes.Select(x => x.ToString("x2")));
+                    }
+                    fileMetaData.Version = "5";
+                }
+
                 imageMetaData = fileMetaData;
             }
             if (exifData != null)
@@ -338,7 +352,6 @@ namespace PhotoArchive.Services.Impl
 
             imageMetaData.Path = imagePath;
 
-            byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
             var info = ImageJob.GetImageInfo(new BytesSource(imageBytes)).Result;
 
             imageMetaData.FileDateTime = System.IO.File.GetCreationTime(imagePath);
@@ -497,7 +510,7 @@ namespace PhotoArchive.Services.Impl
             return true;
         }
 
-        private void SaveImageMetaData(ImageMetaData metadata)
+        public void SaveImageMetaData(ImageMetaData metadata)
         {
             int folderId = int.Parse(metadata.Image.Split('-')[0]);
             int imageId = int.Parse(metadata.Image.Split('-')[1]);
@@ -512,10 +525,7 @@ namespace PhotoArchive.Services.Impl
                 throw new Exception();
             }
 
-            var filename = System.IO.Path.GetFileName(metadata.Path);
-            var jsonPath = System.IO.Path.Combine(folders[folderId], ".meta", filename + ".json");
-
-
+            var jsonPath = System.IO.Path.Combine(folders[folderId], ".meta", metadata.Filename + ".json");
 
             System.IO.File.WriteAllText(jsonPath, JsonConvert.SerializeObject(metadata, Formatting.Indented));
 

@@ -6,7 +6,7 @@ namespace PhotoArchive.Domain
 {
     public class ImageMetaData
     {
-        public static string CurrentVersion = "4";
+        public static string CurrentVersion = "5";
 
         //version 1 properties
         public string ISOSpeedRatings { get; set; }
@@ -49,6 +49,18 @@ namespace PhotoArchive.Domain
             }
         }
 
+        //version 5 properties
+        [JsonIgnore]
+        public string Filename
+        {
+            get
+            {
+                var filename = System.IO.Path.GetFileName(Path);
+                return filename;
+            }
+        }
+        public string Hash { get; set; }
+
         public ImageMetaData()
         {
             WhoWhat = new List<ImageComment>();
@@ -57,5 +69,4 @@ namespace PhotoArchive.Domain
             WhyHow = new List<ImageComment>();
         }
     }
-
 }
