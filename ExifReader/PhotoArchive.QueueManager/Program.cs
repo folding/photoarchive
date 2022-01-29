@@ -1,7 +1,9 @@
-﻿using PhotoArchive.Services.Impl;
+﻿using PhotoArchive.Domain;
+using PhotoArchive.Services.Impl;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace PhotoArchive.QueueManager
 {
@@ -23,6 +25,75 @@ namespace PhotoArchive.QueueManager
         {
             ImageMetaDataService dataService = new ImageMetaDataService(folders, queueFolder);
 
+            //SeedRotationQueues(dataService);
+
+            DoDuplicates(dataService);
+        }
+
+        private static void DoDuplicates(ImageMetaDataService dataService)
+        {
+
+            List<string> files = new List<string>();
+
+            //get all folders/files
+            foreach (var folder in folders)
+            {
+                files.AddRange(System.IO.Directory.GetFiles(folder));
+            }
+
+            //var hasRot = dataService.QueueContents("has-rotation");
+            //var needsRot = dataService.QueueContents("needs-rotation");
+
+            //files = files.Where(x => !hasRot.Contains(x)).Where(x => !needsRot.Contains(x)).ToList();
+
+            Dictionary<string, ImageMetaData> dic = new Dictionary<string, ImageMetaData>();
+            List<string> hashes = new List<string>();
+            List<Tuple<ImageMetaData, ImageMetaData>> dups = new List<Tuple<ImageMetaData, ImageMetaData>>();
+
+            //get meta data for each
+            foreach (var file in files)
+            {
+                bool shouldHash = true;
+                //skip invalid types
+                if (dataService.IsFileInvalid(file))
+                {
+                    shouldHash = false;
+                }
+
+                if (shouldHash)
+                {
+                    var meta = dataService.GetImageMetaDataByPath(file);
+
+                    if (!hashes.Contains(meta.Hash))
+                    {
+                        hashes.Add(meta.Hash);
+                        dic.Add(meta.Hash, meta);
+                    }
+                    else//duplicate!
+                    {
+                        Console.WriteLine("hash-" + meta.Hash);
+                        Console.WriteLine(file + " and "+ dic[meta.Hash].Path);
+                        dups.Add(new Tuple<ImageMetaData, ImageMetaData>(meta, dic[meta.Hash]));
+                    }
+
+
+                }
+            }
+
+            foreach(var dup in dups)
+            {
+                var one = dup.Item1;
+                var two = dup.Item2;
+
+                dataService.Queue("duplicates", one.Path + ";" + two.Path);
+            }
+
+        }
+
+
+        private static void SeedRotationQueues(ImageMetaDataService dataService)
+        {
+
             List<string> files = new List<string>();
 
             //get all folders/files
@@ -38,37 +109,37 @@ namespace PhotoArchive.QueueManager
 
             //get meta data for each
             foreach (var file in files)
-                {
+            {
                 Console.WriteLine(file);
 
                 bool shouldQueue = true;
-                    bool hasRotation = false;
-                    //skip invalid types
-                    if (dataService.IsFileInvalid(file))
-                    {
-                        shouldQueue = false;
-                    }
+                bool hasRotation = false;
+                //skip invalid types
+                if (dataService.IsFileInvalid(file))
+                {
+                    shouldQueue = false;
+                }
 
-                    if (shouldQueue)
-                    {
-                        var meta = dataService.GetImageMetaDataByPath(file);
-                    Console.WriteLine("rot-"+meta.Rotate);
+                if (shouldQueue)
+                {
+                    var meta = dataService.GetImageMetaDataByPath(file);
+                    Console.WriteLine("rot-" + meta.Rotate);
 
                     if (meta.Rotate > 0 || !string.IsNullOrWhiteSpace(meta.GPSLatitude))
-                        {
-                            hasRotation = true;
-                        }
+                    {
+                        hasRotation = true;
                     }
+                }
 
-                    //if has rotation put it in one list
-                    if (hasRotation)
-                    {
-                        dataService.Queue("has-rotation", file);
-                    }
-                    else if(!hasRotation && shouldQueue) //if not put in other
-                    {
-                        dataService.Queue("needs-rotation", file);
-                    }
+                //if has rotation put it in one list
+                if (hasRotation)
+                {
+                    dataService.Queue("has-rotation", file);
+                }
+                else if (!hasRotation && shouldQueue) //if not put in other
+                {
+                    dataService.Queue("needs-rotation", file);
+                }
             }
         }
     }
